@@ -1,33 +1,26 @@
-# Build stage
-FROM dart:stable AS builder
+FROM ghcr.io/truewebber/flutter-docker-image:3.29.2 AS builder
 
 WORKDIR /app
 
-# Install Flutter
-RUN git clone https://github.com/flutter/flutter.git /flutter
-ENV PATH="/flutter/bin:${PATH}"
-RUN flutter channel stable
-RUN flutter upgrade
 RUN flutter config --enable-web
 
-# Copy pubspec files
 COPY web/pubspec.yaml web/pubspec.lock ./
 RUN flutter pub get
 
-# Copy the rest of the application
 COPY web .
 
-# Build the application
 RUN flutter build web --release
 
-# Serve stage
 FROM nginx:alpine
 
-# Copy the build output to nginx
+ENV PORT=80
+
 COPY --from=builder /app/build/web /usr/share/nginx/html
+COPY docker/frontend/nginx.conf /etc/nginx/conf.d/default.template
+COPY docker/frontend/docker-entrypoint.sh /docker-entrypoint.sh
 
-# Copy nginx configuration
-COPY docker/frontend/nginx.conf /etc/nginx/conf.d/default.conf
+RUN apk add --no-cache gettext && \
+    chmod +x /docker-entrypoint.sh && \
+    chmod g+rwx /var/cache/nginx /var/run /var/log/nginx
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"] 
+ENTRYPOINT ["/docker-entrypoint.sh"]
