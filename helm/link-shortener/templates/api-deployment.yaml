@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-api
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    app: link-shortener
+    component: api
+  annotations:
+    repo: "https://github.com/truewebber/link-shortener"
+    hash: {{ .Values | sha256sum }}
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      app: link-shortener
+      component: api
+  template:
+    metadata:
+      labels:
+        app: link-shortener
+        component: api
+    spec:
+      containers:
+        - name: api
+          image: "ghcr.io/truewebber/link-shortener/api:{{ .Chart.AppVersion }}"
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+          ports:
+            - name: http
+              containerPort: {{ .Values.api.containerPort }}
+              protocol: TCP

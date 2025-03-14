@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-frontend
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    app: link-shortener
+    component: frontend
+  annotations:
+    repo: "https://github.com/truewebber/link-shortener"
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.frontend.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: link-shortener
+    component: frontend
