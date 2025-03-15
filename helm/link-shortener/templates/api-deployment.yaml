@@ -1,14 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-api
+  name: "{{ .Release.Name }}-api"
   namespace: "{{ .Release.Namespace }}"
   labels:
     app: link-shortener
     component: api
   annotations:
     repo: "https://github.com/truewebber/link-shortener"
-    hash: {{ .Values | sha256sum }}
 spec:
   replicas: {{ .Values.api.replicaCount }}
   selector:
@@ -20,7 +19,11 @@ spec:
       labels:
         app: link-shortener
         component: api
+      annotations:
+        checksum/config: {{ .Values | toJson | sha256sum }}
     spec:
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com
       containers:
         - name: api
           image: "ghcr.io/truewebber/link-shortener/api:{{ .Chart.AppVersion }}"
@@ -29,5 +32,32 @@ spec:
             allowPrivilegeEscalation: false
           ports:
             - name: http
-              containerPort: {{ .Values.api.containerPort }}
+              containerPort: {{ .Values.api.port }}
               protocol: TCP
+            - name: metrics
+              containerPort: {{ .Values.api.metricsPort }}
+              protocol: TCP
+          env:
+            - name: APP_HOST_PORT
+              value: ":{{ .Values.api.port }}"
+            - name: METRICS_HOST_PORT
+              value: ":{{ .Values.api.metricsPort }}"
+          livenessProbe:
+            httpGet:
+              port: {{ .Values.api.metricsPort }}
+              path: /metrics
+            initialDelaySeconds: 20
+            timeoutSeconds: 15
+          readinessProbe:
+            httpGet:
+              port: {{ .Values.api.metricsPort }}
+              path: /metrics
+            initialDelaySeconds: 15
+            timeoutSeconds: 9
+          resources:
+            requests:
+              memory: "20Mi"
+              cpu: "20m"
+            limits:
+              memory: "40Mi"
+              cpu: "40m"

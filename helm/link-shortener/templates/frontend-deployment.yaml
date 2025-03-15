@@ -1,14 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-frontend
+  name: "{{ .Release.Name }}-frontend"
   namespace: "{{ .Release.Namespace }}"
   labels:
     app: link-shortener
     component: frontend
   annotations:
     repo: "https://github.com/truewebber/link-shortener"
-    hash: {{ .Values | sha256sum }}
 spec:
   replicas: {{ .Values.frontend.replicaCount }}
   selector:
@@ -20,7 +19,11 @@ spec:
       labels:
         app: link-shortener
         component: frontend
+      annotations:
+        checksum/config: {{ .Values | toJson | sha256sum }}
     spec:
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com
       containers:
         - name: frontend
           image: "ghcr.io/truewebber/link-shortener/frontend:{{ .Chart.AppVersion }}"
@@ -29,5 +32,27 @@ spec:
             allowPrivilegeEscalation: false
           ports:
             - name: http
-              containerPort: {{ .Values.frontend.containerPort }}
+              containerPort: {{ .Values.frontend.port }}
               protocol: TCP
+          env:
+            - name: PORT
+              value: "{{ .Values.frontend.port }}"
+          livenessProbe:
+            httpGet:
+              port: {{ .Values.frontend.port }}
+              path: /health
+            initialDelaySeconds: 20
+            timeoutSeconds: 15
+          readinessProbe:
+            httpGet:
+              port: {{ .Values.frontend.port }}
+              path: /health
+            initialDelaySeconds: 15
+            timeoutSeconds: 9
+          resources:
+            requests:
+              memory: "20Mi"
+              cpu: "20m"
+            limits:
+              memory: "40Mi"
+              cpu: "40m"

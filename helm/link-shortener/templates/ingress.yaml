@@ -1,4 +1,3 @@
-{{- if .Values.ingress.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -13,53 +12,54 @@ spec:
   ingressClassName: nginx-public
   tls:
     - hosts:
-        - "short.twb.one"
-      secretName: "short-twb-one-tls"
+        - "{{ .Values.ingress.tls.host }}"
+      secretName: "{{ .Values.ingress.tls.secretName }}"
   rules:
-    - host: "short.twb.one"
+    - host: "{{ .Values.ingress.host }}"
       http:
         paths:
+
           # Frontend routes
           - path: /app(/|$)(.*)
             pathType: Prefix
             backend:
               service:
-                name: {{ .Release.Name }}-frontend
+                name: "{{ .Release.Name }}-frontend"
                 port:
                   number: {{ .Values.frontend.port }}
-          
+
           # API routes
           - path: /api(/|$)(.*)
             pathType: Prefix
             backend:
               service:
-                name: {{ .Release.Name }}-api
+                name: "{{ .Release.Name }}-api"
                 port:
                   number: {{ .Values.api.port }}
-          
+
           # Root path for the frontend application
           - path: /
             pathType: Exact
             backend:
               service:
-                name: {{ .Release.Name }}-frontend
+                name: "{{ .Release.Name }}-frontend"
                 port:
                   number: {{ .Values.frontend.port }}
-          
+
           # Static assets for the frontend
           - path: /assets(/|$)(.*)
             pathType: Prefix
             backend:
               service:
-                name: {{ .Release.Name }}-frontend
+                name: "{{ .Release.Name }}-frontend"
                 port:
                   number: {{ .Values.frontend.port }}
-          
+
           # URL redirection - this should be the last rule to catch all other paths
           - path: /(.*)
             pathType: Prefix
             backend:
               service:
-                name: {{ .Release.Name }}-api
+                name: "{{ .Release.Name }}-api"
                 port:
                   number: {{ .Values.api.port }}
