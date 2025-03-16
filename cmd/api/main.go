@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/truewebber/gopkg/log"
+	"github.com/truewebber/gopkg/metrics"
 	"github.com/truewebber/gopkg/signal"
 	"github.com/truewebber/gopkg/starter"
 
@@ -32,15 +33,24 @@ func run(logger log.Logger) {
 
 	linkHandler := handler.NewLinkHandler(app, cfg.BaseHost, logger)
 	healthHandler := handler.NewHealthHandler()
-	router := httprest.NewRouter(linkHandler, healthHandler)
 
-	logger.Info("starting Link Shortener API server on port %d", cfg.AppHostPort)
+	const recorderName = "link-shortener"
+	latencyRecorder := metrics.NewLatencyRecorder(recorderName)
+
+	routerHandler := httprest.NewRouterHandler(linkHandler, healthHandler, latencyRecorder, logger)
+
+	logger.Info("starting Link Shortener API server", "address", cfg.AppHostPort)
 
 	server := newHTTPServer(cfg.AppHostPort)
-	server.Handler = router.Handler()
+	server.Handler = routerHandler
+
+	logger.Info("starting Metrics server", "address", cfg.MetricsHostPort)
+
+	metricsServer := metrics.NewMetricsServer(cfg.MetricsHostPort)
 
 	str := starter.NewStarter()
 	str.RegisterServer(starter.WrapHTTP(server))
+	str.RegisterServer(starter.WrapHTTP(metricsServer))
 
 	shutdownCtx := signal.ContextClosableOnSignals(syscall.SIGINT, syscall.SIGTERM)
 

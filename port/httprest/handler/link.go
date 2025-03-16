@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
-	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/truewebber/gopkg/log"
 
 	"github.com/truewebber/link-shortener/app"
@@ -60,7 +60,7 @@ func (h *LinkHandler) HandleCreateLink(w http.ResponseWriter, r *http.Request) {
 	hash, err := h.app.Command.CreateLink.Handle(r.Context(), params)
 	if err != nil {
 		h.logger.Error("failed to create link", "params", params, "error", err)
-		http.Error(w, "create link", http.StatusInternalServerError)
+		http.Error(w, "internal", http.StatusInternalServerError)
 
 		return
 	}
@@ -81,16 +81,18 @@ func (h *LinkHandler) HandleCreateLink(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LinkHandler) HandleRedirect(w http.ResponseWriter, r *http.Request) {
-	path := strings.TrimPrefix(r.URL.Path, "/")
-	if path == "" {
-		h.logger.Error("invalid path", "path", path)
-		http.Error(w, "invalid URL", http.StatusBadRequest)
+	pathVars := mux.Vars(r)
+	hash, ok := pathVars["hash"]
+
+	if !ok || hash == "" {
+		h.logger.Error("invalid hash", "hash", hash, "path", r.URL.Path)
+		http.Error(w, "bad request", http.StatusBadRequest)
 
 		return
 	}
 
 	params := query.GetLinkByHashParams{
-		Hash: path,
+		Hash: hash,
 	}
 
 	l, err := h.app.Query.GetLinkByHash.Handle(r.Context(), params)
@@ -110,6 +112,6 @@ func (h *LinkHandler) buildShortenURL(hash string) *url.URL {
 	return &url.URL{
 		Scheme: schemeHTTPS,
 		Host:   h.baseHost,
-		Path:   "" + hash,
+		Path:   "/" + hash,
 	}
 }

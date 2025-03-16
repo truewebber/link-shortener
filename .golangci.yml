@@ -64,6 +64,8 @@ linters-settings:
 linters:
   enable-all: true
   disable:
+    # deprecated
+    - tenv
     # to consider in future
     - depguard
     # not helpful linters

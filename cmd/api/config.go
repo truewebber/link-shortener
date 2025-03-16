@@ -8,6 +8,7 @@ import (
 
 type config struct {
 	AppHostPort              string `env:"APP_HOST_PORT,required=true"`
+	MetricsHostPort          string `env:"METRICS_HOST_PORT,required=true"`
 	BaseHost                 string `env:"BASE_HOST,required=true"`
 	PostgresConnectionString string `env:"POSTGRES_CONNECTION_STRING,required=true"`
 }

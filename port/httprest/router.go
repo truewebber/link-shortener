@@ -3,31 +3,31 @@ package httprest
 import (
 	"net/http"
 
+	"github.com/gorilla/mux"
+	"github.com/truewebber/gopkg/log"
+	"github.com/truewebber/gopkg/metrics"
+
 	"github.com/truewebber/link-shortener/port/httprest/handler"
+	"github.com/truewebber/link-shortener/port/httprest/middleware"
 )
 
-type Router struct {
-	linkHandler   *handler.LinkHandler
-	healthHandler *handler.HealthHandler
-}
-
-func NewRouter(
+func NewRouterHandler(
 	linkHandler *handler.LinkHandler,
 	healthHandler *handler.HealthHandler,
-) *Router {
-	return &Router{
-		linkHandler:   linkHandler,
-		healthHandler: healthHandler,
-	}
-}
+	latencyRecorder metrics.LatencyRecorder,
+	logger log.Logger,
+) http.Handler {
+	router := mux.NewRouter()
 
-func (r *Router) Handler() http.Handler {
-	mux := http.NewServeMux()
+	router.Use(
+		middleware.Logging(logger),
+		middleware.Metrics(latencyRecorder),
+	)
 
-	mux.HandleFunc("/health", r.healthHandler.HandleHealth)
-	mux.HandleFunc("/api/restricted_urls", r.linkHandler.HandleCreateLink)
+	router.HandleFunc("/health", healthHandler.HandleHealth).Methods(http.MethodGet)
+	router.HandleFunc("/api/restricted_urls", linkHandler.HandleCreateLink).Methods(http.MethodPost)
 
-	mux.HandleFunc("/", r.linkHandler.HandleRedirect)
+	router.HandleFunc("/{hash:[0-9a-zA-Z]+}", linkHandler.HandleRedirect).Methods(http.MethodGet)
 
-	return mux
+	return router
 }
