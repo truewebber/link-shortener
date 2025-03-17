@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
+import '../config/app_config_provider.dart';
 import 'package:intl/intl.dart';
 
 class UrlShortenerForm extends StatefulWidget {
@@ -18,17 +19,11 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
   String? _shortenedUrl;
   String? _errorMessage;
   bool _isValidUrl = false;
+  late final ApiService _apiService;
   
   // Animation controller for success animation
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
-  
-  // API service with configurable base URL
-  final _apiService = ApiService(
-    // In a production app, this would come from environment configuration
-    baseUrl: const String.fromEnvironment('API_BASE_URL', 
-      defaultValue: 'http://localhost:8080'),
-  );
 
   @override
   void initState() {
@@ -48,6 +43,14 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
     _urlController.addListener(_validateUrl);
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize API service with config from provider
+    final config = AppConfigProvider.of(context);
+    _apiService = ApiService(config);
+  }
+
   void _validateUrl() {
     final url = _urlController.text;
     final isValid = url.isNotEmpty && 
@@ -65,6 +68,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
   void dispose() {
     _urlController.dispose();
     _animationController.dispose();
+    _apiService.dispose();
     super.dispose();
   }
 

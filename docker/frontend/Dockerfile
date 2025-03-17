@@ -13,10 +13,13 @@ RUN flutter build web --release --base-href "/app/"
 
 FROM nginx:alpine
 
-ENV PORT=80
+ENV PORT=3000
+ENV BACKEND_API_URL=/
+ENV ENVIRONMENT=production
 
 COPY --from=builder /app/build/web /usr/share/nginx/html
 COPY docker/frontend/server.conf /etc/nginx/conf.d/default.template
+COPY docker/frontend/config.template.js /usr/share/nginx/html/config.template.js
 COPY docker/frontend/docker-entrypoint.sh /docker-entrypoint.sh
 
 RUN apk add --no-cache gettext && \

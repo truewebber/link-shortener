@@ -37,6 +37,10 @@ spec:
           env:
             - name: PORT
               value: "{{ .Values.frontend.port }}"
+            - name: BACKEND_API_URL
+              value: "{{ .Values.frontend.backendApiUrl }}"
+            - name: ENVIRONMENT
+              value: "{{ .Values.frontend.environment }}"
           livenessProbe:
             httpGet:
               port: {{ .Values.frontend.port }}
