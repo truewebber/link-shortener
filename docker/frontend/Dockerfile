@@ -16,7 +16,7 @@ FROM nginx:alpine
 ENV PORT=80
 
 COPY --from=builder /app/build/web /usr/share/nginx/html
-COPY docker/frontend/nginx.conf /etc/nginx/conf.d/default.template
+COPY docker/frontend/server.conf /etc/nginx/conf.d/default.template
 COPY docker/frontend/docker-entrypoint.sh /docker-entrypoint.sh
 
 RUN apk add --no-cache gettext && \

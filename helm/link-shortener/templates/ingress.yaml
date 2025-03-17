@@ -18,9 +18,8 @@ spec:
     - host: "{{ .Values.ingress.host }}"
       http:
         paths:
-
           # Frontend routes
-          - path: /app(/|$)(.*)
+          - path: /app
             pathType: Prefix
             backend:
               service:
@@ -29,7 +28,7 @@ spec:
                   number: {{ .Values.frontend.port }}
 
           # API routes
-          - path: /api(/|$)(.*)
+          - path: /api
             pathType: Prefix
             backend:
               service:
@@ -47,7 +46,7 @@ spec:
                   number: {{ .Values.frontend.port }}
 
           # Static assets for the frontend
-          - path: /assets(/|$)(.*)
+          - path: /assets
             pathType: Prefix
             backend:
               service:
@@ -56,7 +55,7 @@ spec:
                   number: {{ .Values.frontend.port }}
 
           # URL redirection - this should be the last rule to catch all other paths
-          - path: /(.*)
+          - path: /
             pathType: Prefix
             backend:
               service:
