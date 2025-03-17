@@ -9,7 +9,7 @@ RUN flutter pub get
 
 COPY web .
 
-RUN flutter build web --release
+RUN flutter build web --release --base-href "/app/"
 
 FROM nginx:alpine
 

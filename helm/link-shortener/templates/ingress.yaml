@@ -18,6 +18,14 @@ spec:
     - host: "{{ .Values.ingress.host }}"
       http:
         paths:
+          - path: /
+            pathType: Exact
+            backend:
+              service:
+                name: "{{ .Release.Name }}-frontend"
+                port:
+                  number: {{ .Values.frontend.port }}
+
           # Frontend routes
           - path: /app
             pathType: Prefix
@@ -36,15 +44,6 @@ spec:
                 port:
                   number: {{ .Values.api.port }}
 
-          # Root path for the frontend application
-          - path: /
-            pathType: Exact
-            backend:
-              service:
-                name: "{{ .Release.Name }}-frontend"
-                port:
-                  number: {{ .Values.frontend.port }}
-
           # Static assets for the frontend
           - path: /assets
             pathType: Prefix
@@ -54,7 +53,7 @@ spec:
                 port:
                   number: {{ .Values.frontend.port }}
 
-          # URL redirection - this should be the last rule to catch all other paths
+          # URL shortener redirection - this should be the last rule to catch all other paths
           - path: /
             pathType: Prefix
             backend:
