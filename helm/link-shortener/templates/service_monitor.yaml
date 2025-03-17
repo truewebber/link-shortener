@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: "link-shortener"
+  annotations:
+    repo: "https://github.com/truewebber/link-shortener"
+spec:
+  selector:
+    matchLabels:
+      app: "link-shortener"
+      component: api
+  endpoints:
+    - port: metrics
