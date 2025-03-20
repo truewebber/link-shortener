@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/screens/home_screen.dart';
+import 'package:link_shortener/screens/home_screen.dart';
+import 'package:link_shortener/widgets/feature_section.dart';
+import 'package:link_shortener/widgets/url_shortener_form.dart';
 import '../test_helper.dart';
 
 void main() {

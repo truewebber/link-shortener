@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import '../../lib/services/api_service.dart';
+import 'package:link_shortener/services/api_service.dart';
 import '../test_helper.dart';
 
 @GenerateMocks([http.Client])

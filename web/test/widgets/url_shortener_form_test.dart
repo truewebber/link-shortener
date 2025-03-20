@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:link_shortener/services/api_service.dart';
 import 'package:mockito/mockito.dart';
-import '../../lib/widgets/url_shortener_form.dart';
+import 'package:link_shortener/widgets/url_shortener_form.dart';
 import '../test_helper.dart';
 
 void main() {

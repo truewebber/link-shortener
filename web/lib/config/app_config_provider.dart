@@ -18,4 +18,4 @@ class AppConfigProvider extends InheritedWidget {
 
   @override
   bool updateShouldNotify(AppConfigProvider oldWidget) => config != oldWidget.config;
-} 
+}

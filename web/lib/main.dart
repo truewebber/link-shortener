@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
-import 'screens/basic_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'config/app_config.dart';
 import 'config/app_config_provider.dart';

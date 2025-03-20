@@ -144,55 +144,55 @@ class HomeScreen extends StatelessWidget {
     );
   }
   
-  Widget _buildSimpleFooter(BuildContext context) {
-    return Container(
-      height: 50,
-      color: Colors.grey.shade200,
-      child: const Center(
-        child: Text(
-          '© 2024 Link Shortener. All rights reserved.',
-          style: TextStyle(color: Colors.black),
-        ),
-      ),
-    );
-  }
+  // Widget _buildSimpleFooter(BuildContext context) {
+  //   return Container(
+  //     height: 50,
+  //     color: Colors.grey.shade200,
+  //     child: const Center(
+  //       child: Text(
+  //         '© 2024 Link Shortener. All rights reserved.',
+  //         style: TextStyle(color: Colors.black),
+  //       ),
+  //     ),
+  //   );
+  // }
   
-  Widget _buildFooter(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-      color: Theme.of(context).colorScheme.surface,
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('Terms of Service'),
-                ),
-                const SizedBox(width: 16),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('Privacy Policy'),
-                ),
-                const SizedBox(width: 16),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('Contact Us'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '© ${DateTime.now().year} Link Shortener. All rights reserved.',
-              style: Theme.of(context).textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildFooter(BuildContext context) {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+  //     color: Theme.of(context).colorScheme.surface,
+  //     child: Center(
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             children: [
+  //               TextButton(
+  //                 onPressed: () {},
+  //                 child: const Text('Terms of Service'),
+  //               ),
+  //               const SizedBox(width: 16),
+  //               TextButton(
+  //                 onPressed: () {},
+  //                 child: const Text('Privacy Policy'),
+  //               ),
+  //               const SizedBox(width: 16),
+  //               TextButton(
+  //                 onPressed: () {},
+  //                 child: const Text('Contact Us'),
+  //               ),
+  //             ],
+  //           ),
+  //           const SizedBox(height: 8),
+  //           Text(
+  //             '© ${DateTime.now().year} Link Shortener. All rights reserved.',
+  //             style: Theme.of(context).textTheme.bodySmall,
+  //             textAlign: TextAlign.center,
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 } 

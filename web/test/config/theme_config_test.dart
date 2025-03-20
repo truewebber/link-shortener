@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/config/theme_config.dart';
 
 void main() {
   group('ThemeConfig', () {

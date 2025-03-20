@@ -1,24 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import '../lib/services/api_service.dart';
-import '../lib/config/app_config.dart';
+import 'package:link_shortener/config/app_config_provider.dart';
+import 'package:link_shortener/services/api_service.dart';
+import 'mocks/mock_app_config.dart';
 
 @GenerateMocks([http.Client])
 class MockApiService extends Mock implements ApiService {}
 
-class TestAppConfig extends AppConfig {
-  TestAppConfig() : super(
-    apiBaseUrl: 'http://test-api.example.com',
-    environment: 'test',
-  );
-}
+// Use the MockAppConfig instead of extending AppConfig
+typedef TestAppConfig = MockAppConfig;
 
 class TestWidgetWrapper extends StatelessWidget {
   final Widget child;
-  final AppConfig config;
+  final MockAppConfig config;
 
   const TestWidgetWrapper({
     super.key,
@@ -46,9 +45,11 @@ extension WidgetTesterExtension on WidgetTester {
     Timer(timeout, () => timerDone = true);
     while (!timerDone) {
       await pump(const Duration(milliseconds: 100));
-      final found = any(finder);
-      if (found) {
+      try {
+        expect(finder, findsOneWidget);
         return;
+      } catch (_) {
+        // Keep trying until timeout
       }
     }
     throw Exception('Timeout waiting for ${finder.description}');

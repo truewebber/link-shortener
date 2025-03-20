@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/config/app_config.dart';
+import 'package:link_shortener/config/app_config.dart';
 
 void main() {
   group('AppConfig', () {

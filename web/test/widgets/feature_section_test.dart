@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/widgets/feature_section.dart';
+import 'package:link_shortener/widgets/feature_section.dart';
 import '../test_helper.dart';
 
 void main() {
