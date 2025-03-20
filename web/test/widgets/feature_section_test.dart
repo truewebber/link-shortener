@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/widgets/feature_section.dart';
+
+import '../mocks/mock_auth_service.dart';
 import '../test_helper.dart';
 
 void main() {
   late TestAppConfig testConfig;
+  late MockAuthService testAuthService;
   
   setUp(() {
     testConfig = TestAppConfig();
+    testAuthService = MockAuthService();
   });
   
   // Helper function to build a testable widget
   Widget buildTestableWidget(Widget child) => TestWidgetWrapper(
       config: testConfig,
+      authService: testAuthService,
       child: SingleChildScrollView(
         child: child,
       ),

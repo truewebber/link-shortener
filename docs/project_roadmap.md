@@ -52,7 +52,7 @@
 
 ## Release Slices
 
-### MVP (Release 1)
+### MVP (Release 1) - COMPLETED ✅
 ```
 ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐
 │ Visit Landing     │  │ Enter Long URL    │  │                   │  │ Click Short URL   │

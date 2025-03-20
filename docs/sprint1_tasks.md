@@ -1,5 +1,7 @@
 # Link Shortener - Sprint 1 Tasks Breakdown
 
+**STATUS: COMPLETED ✅**
+
 ## Sprint Goal
 Create a user-friendly landing page with core design elements that works across devices and provides visual feedback for user interactions.
 

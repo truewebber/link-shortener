@@ -3,13 +3,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/screens/home_screen.dart';
 import 'package:link_shortener/widgets/feature_section.dart';
 import 'package:link_shortener/widgets/url_shortener_form.dart';
+
+import '../mocks/mock_auth_service.dart';
 import '../test_helper.dart';
 
 void main() {
   late TestAppConfig testConfig;
+  late MockAuthService testAuthService;
   
   setUp(() {
     testConfig = TestAppConfig();
+    testAuthService = MockAuthService();
   });
   
   group('HomeScreen', () {
@@ -17,6 +21,7 @@ void main() {
       await tester.pumpWidget(
         TestWidgetWrapper(
           config: testConfig,
+          authService: testAuthService,
           child: const HomeScreen(),
         ),
       );
@@ -31,6 +36,7 @@ void main() {
       await tester.pumpWidget(
         TestWidgetWrapper(
           config: testConfig,
+          authService: testAuthService,
           child: const HomeScreen(),
         ),
       );
@@ -55,6 +61,7 @@ void main() {
       await tester.pumpWidget(
         TestWidgetWrapper(
           config: testConfig,
+          authService: testAuthService,
           child: const HomeScreen(),
         ),
       );
@@ -69,6 +76,7 @@ void main() {
       await tester.pumpWidget(
         TestWidgetWrapper(
           config: testConfig,
+          authService: testAuthService,
           child: const HomeScreen(),
         ),
       );
@@ -87,6 +95,7 @@ void main() {
       await tester.pumpWidget(
         TestWidgetWrapper(
           config: testConfig,
+          authService: testAuthService,
           child: const HomeScreen(),
         ),
       );
@@ -105,6 +114,7 @@ void main() {
       await tester.pumpWidget(
         TestWidgetWrapper(
           config: testConfig,
+          authService: testAuthService,
           child: const HomeScreen(),
         ),
       );
@@ -126,6 +136,7 @@ void main() {
       await tester.pumpWidget(
         TestWidgetWrapper(
           config: testConfig,
+          authService: testAuthService,
           child: const HomeScreen(),
         ),
       );

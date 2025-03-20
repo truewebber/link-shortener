@@ -10,14 +10,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/main.dart';
 import 'package:link_shortener/screens/home_screen.dart';
 import 'mocks/mock_app_config.dart';
+import 'mocks/mock_auth_service.dart';
 
 void main() {
   testWidgets('App loads with basic components', (tester) async {
-    // Create a test configuration
+    // Create test configuration and auth service
     final config = MockAppConfig();
+    final authService = MockAuthService();
     
     // Build our app and trigger a frame
-    await tester.pumpWidget(LinkShortenerApp(config: config));
+    await tester.pumpWidget(LinkShortenerApp(
+      config: config,
+      authService: authService,
+    ));
 
     // Verify that our app has loaded the HomeScreen
     expect(find.byType(HomeScreen), findsOneWidget);

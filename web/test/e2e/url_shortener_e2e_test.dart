@@ -2,21 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/main.dart';
 import 'package:link_shortener/screens/home_screen.dart';
+
+import '../mocks/mock_auth_service.dart';
 import '../test_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late TestAppConfig testConfig;
+  late MockAuthService testAuthService;
 
   setUp(() {
     testConfig = TestAppConfig();
+    testAuthService = MockAuthService();
   });
 
   group('URL Shortener End-to-End', () {
     testWidgets('loads app and renders base components', (tester) async {
       await tester.pumpWidget(
-        LinkShortenerApp(config: testConfig),
+        LinkShortenerApp(
+          config: testConfig,
+          authService: testAuthService,
+        ),
       );
 
       // Verify initial state
@@ -34,7 +41,10 @@ void main() {
     
     testWidgets('handles theme changes correctly', (tester) async {
       await tester.pumpWidget(
-        LinkShortenerApp(config: testConfig),
+        LinkShortenerApp(
+          config: testConfig,
+          authService: testAuthService,
+        ),
       );
 
       // Verify theme is initialized
@@ -44,7 +54,10 @@ void main() {
 
     testWidgets('handles responsive layout changes', (tester) async {
       await tester.pumpWidget(
-        LinkShortenerApp(config: testConfig),
+        LinkShortenerApp(
+          config: testConfig,
+          authService: testAuthService,
+        ),
       );
 
       // Test different layouts
@@ -60,7 +73,10 @@ void main() {
 
     testWidgets('shows features section', (tester) async {
       await tester.pumpWidget(
-        LinkShortenerApp(config: testConfig),
+        LinkShortenerApp(
+          config: testConfig,
+          authService: testAuthService,
+        ),
       );
 
       // Verify features are displayed

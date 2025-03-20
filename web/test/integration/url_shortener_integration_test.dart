@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/main.dart';
+import '../mocks/mock_auth_service.dart';
 import '../test_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   
   late TestAppConfig testConfig;
+  late MockAuthService testAuthService;
   
   setUp(() {
     testConfig = TestAppConfig();
+    testAuthService = MockAuthService();
   });
   
   group('URL Shortener Integration', () {
     testWidgets('verifies app loads correctly with all components', (tester) async {
       await tester.pumpWidget(
-        LinkShortenerApp(config: testConfig),
+        LinkShortenerApp(
+          config: testConfig,
+          authService: testAuthService,
+        ),
       );
       
       // Verify app title
@@ -36,7 +42,10 @@ void main() {
     
     testWidgets('verifies features section is displayed', (tester) async {
       await tester.pumpWidget(
-        LinkShortenerApp(config: testConfig),
+        LinkShortenerApp(
+          config: testConfig,
+          authService: testAuthService,
+        ),
       );
       
       // Verify features section
@@ -50,7 +59,10 @@ void main() {
     
     testWidgets('verifies responsive layout in different screen sizes', (tester) async {
       await tester.pumpWidget(
-        LinkShortenerApp(config: testConfig),
+        LinkShortenerApp(
+          config: testConfig,
+          authService: testAuthService,
+        ),
       );
       
       // Test desktop size

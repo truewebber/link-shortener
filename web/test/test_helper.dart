@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:link_shortener/config/app_config_provider.dart';
 import 'package:link_shortener/services/api_service.dart';
+import 'package:link_shortener/services/auth_service.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
@@ -24,12 +25,16 @@ class TestWidgetWrapper extends StatelessWidget {
     super.key,
     required this.child,
     required this.config,
+    this.authService,
   });
   /// The child widget to wrap
   final Widget child;
   
   /// The mock configuration to use
   final MockAppConfig config;
+
+  /// The mock auth service to use
+  final AuthService? authService;
 
   @override
   Widget build(BuildContext context) => AppConfigProvider(
@@ -44,7 +49,8 @@ class TestWidgetWrapper extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<MockAppConfig>('config', config));
+    properties..add(DiagnosticsProperty<MockAppConfig>('config', config))
+    ..add(DiagnosticsProperty<AuthService?>('authService', authService));
   }
 }
 

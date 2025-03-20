@@ -1,15 +1,24 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:link_shortener/models/auth/user.dart';
+import 'package:link_shortener/screens/auth_screen.dart';
+import 'package:link_shortener/services/auth_service.dart';
+import 'package:link_shortener/widgets/auth/user_profile_header.dart';
 import 'package:link_shortener/widgets/feature_section.dart';
 import 'package:link_shortener/widgets/url_shortener_form.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({
+    super.key,
+    this.userSession,
+  });
+
+  final UserSession? userSession;
 
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
-      print('Building HomeScreen');
+      print('Building HomeScreen. Authenticated: ${userSession != null}');
     }
     
     return Scaffold(
@@ -18,23 +27,29 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         actions: [
-          TextButton(
-            onPressed: () {
-              // This would navigate to login screen in a real app
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Login functionality will be implemented in Sprint 2'),
+          // Show different UI based on authentication state
+          if (userSession != null)
+            UserProfileHeader(
+              user: userSession!.user,
+              onSignOut: () => _handleSignOut(context),
+            )
+          else
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AuthScreen(),
+                  ),
+                );
+              },
+              child: Text(
+                'Login',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  fontWeight: FontWeight.bold,
                 ),
-              );
-            },
-            child: Text(
-              'Login',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary,
-                fontWeight: FontWeight.bold,
               ),
             ),
-          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -139,55 +154,38 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   
-  // Widget _buildSimpleFooter(BuildContext context) {
-  //   return Container(
-  //     height: 50,
-  //     color: Colors.grey.shade200,
-  //     child: const Center(
-  //       child: Text(
-  //         '© 2024 Link Shortener. All rights reserved.',
-  //         style: TextStyle(color: Colors.black),
-  //       ),
-  //     ),
-  //   );
-  // }
-  
-  // Widget _buildFooter(BuildContext context) {
-  //   return Container(
-  //     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-  //     color: Theme.of(context).colorScheme.surface,
-  //     child: Center(
-  //       child: Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         children: [
-  //           Row(
-  //             mainAxisAlignment: MainAxisAlignment.center,
-  //             children: [
-  //               TextButton(
-  //                 onPressed: () {},
-  //                 child: const Text('Terms of Service'),
-  //               ),
-  //               const SizedBox(width: 16),
-  //               TextButton(
-  //                 onPressed: () {},
-  //                 child: const Text('Privacy Policy'),
-  //               ),
-  //               const SizedBox(width: 16),
-  //               TextButton(
-  //                 onPressed: () {},
-  //                 child: const Text('Contact Us'),
-  //               ),
-  //             ],
-  //           ),
-  //           const SizedBox(height: 8),
-  //           Text(
-  //             '© ${DateTime.now().year} Link Shortener. All rights reserved.',
-  //             style: Theme.of(context).textTheme.bodySmall,
-  //             textAlign: TextAlign.center,
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-} 
+  Future<void> _handleSignOut(BuildContext context) async {
+    // Show confirmation dialog
+    final shouldSignOut = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+    
+    if (shouldSignOut == true) {
+      // Sign out using AuthService
+      await AuthService().signOut();
+      
+      // Show confirmation message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You have been signed out'),
+          ),
+        );
+      }
+    }
+  }
+}
