@@ -43,7 +43,7 @@ spec:
             - name: METRICS_HOST_PORT
               value: ":{{ .Values.api.metricsPort }}"
             - name: BASE_HOST
-              value: "{{ .Values.ingress.host }}"
+              value: "{{ .Values.api.host }}"
             - name: POSTGRES_CONNECTION_STRING
               valueFrom:
                 secretKeyRef:

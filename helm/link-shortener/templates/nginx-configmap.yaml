@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-nginx-config
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    app: link-shortener
+    component: nginx
+  annotations:
+    repo: "https://github.com/truewebber/link-shortener"
+data:
+  nginx.conf: |
+    server {
+        listen 80;
+        server_name _;
+
+        # Frontend routes - exact match for root
+        location = / {
+            proxy_pass http://{{ .Release.Name }}-frontend:{{ .Values.frontend.port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        # Frontend app routes
+        location /app {
+            proxy_pass http://{{ .Release.Name }}-frontend:{{ .Values.frontend.port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        # API routes
+        location /api {
+            proxy_pass http://{{ .Release.Name }}-api:{{ .Values.api.port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        # Static assets for the frontend
+        location /assets {
+            proxy_pass http://{{ .Release.Name }}-frontend:{{ .Values.frontend.port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        # URL shortener redirection - catch all other paths
+        location / {
+            proxy_pass http://{{ .Release.Name }}-api:{{ .Values.api.port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+    }

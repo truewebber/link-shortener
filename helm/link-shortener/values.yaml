@@ -1,16 +1,26 @@
-ingress:
-  tls:
-    host: "short.twb.one"
-    secretName: "short-twb-one-tls"
-  host: "short.twb.one"
-
 api:
   replicaCount: 1
   port: 9999
   metricsPort: 9998
+  host: "short.twb.one"
 
 frontend:
   replicaCount: 1
   port: 3000
   environment: "production"
   backendApiUrl: "/"
+
+nginx:
+  replicas: 1
+  port: 80
+  image:
+    repository: nginx
+    tag: stable
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 20m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
