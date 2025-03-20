@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../services/api_service.dart';
-import '../config/app_config_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:link_shortener/config/app_config_provider.dart';
+import 'package:link_shortener/services/api_service.dart';
 
+/// Form for shortening URLs
 class UrlShortenerForm extends StatefulWidget {
+  /// Creates a URL shortener form
   const UrlShortenerForm({super.key});
 
   @override
@@ -32,7 +36,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: Curves.easeOutBack,
@@ -100,7 +104,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
       });
       
       // Play success animation
-      _animationController.forward();
+      unawaited(_animationController.forward());
     } on ApiException catch (e) {
       setState(() {
         _isLoading = false;
@@ -114,23 +118,24 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
     }
   }
 
-  Future<void> _copyToClipboard(String text) async {
-    await Clipboard.setData(ClipboardData(text: text));
-    
-    // Show a snackbar to confirm the copy
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Copied to clipboard!'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+  /// Copies the shortened URL to clipboard
+  Future<void> _copyToClipboard() async {
+    if (_shortenedUrl != null) {
+      await Clipboard.setData(ClipboardData(text: _shortenedUrl!));
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('URL copied to clipboard'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       constraints: const BoxConstraints(maxWidth: 600),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -138,7 +143,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha(26),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -176,7 +181,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
                 ),
                 keyboardType: TextInputType.url,
                 textInputAction: TextInputAction.go,
-                onFieldSubmitted: (_) => _shortenUrl(),
+                onFieldSubmitted: (_) async => _shortenUrl(),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a URL';
@@ -202,7 +207,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  disabledBackgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                  disabledBackgroundColor: Theme.of(context).colorScheme.primary.withAlpha(128),
                 ),
                 child: _isLoading
                     ? const SizedBox(
@@ -298,7 +303,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
                             ),
                             IconButton(
                               icon: const Icon(Icons.copy),
-                              onPressed: () => _copyToClipboard(_shortenedUrl!),
+                              onPressed: _copyToClipboard,
                               tooltip: 'Copy to clipboard',
                             ),
                           ],
@@ -335,5 +340,4 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
         ),
       ),
     );
-  }
-} 
+}

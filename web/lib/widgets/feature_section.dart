@@ -4,11 +4,9 @@ class FeatureSection extends StatelessWidget {
   const FeatureSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             'Features',
@@ -63,10 +61,8 @@ class FeatureSection extends StatelessWidget {
         ],
       ),
     );
-  }
 
-  List<Widget> _buildFeatureItems(BuildContext context) {
-    return [
+  List<Widget> _buildFeatureItems(BuildContext context) => [
       _buildFeatureItem(
         context,
         icon: Icons.speed,
@@ -89,23 +85,20 @@ class FeatureSection extends StatelessWidget {
             'Set custom expiration dates for your links when you sign in.',
       ),
     ];
-  }
 
   Widget _buildFeatureItem(
     BuildContext context, {
     required IconData icon,
     required String title,
     required String description,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+  }) => Padding(
+      padding: const EdgeInsets.all(16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.primary.withAlpha(26),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -131,5 +124,4 @@ class FeatureSection extends StatelessWidget {
         ],
       ),
     );
-  }
 } 

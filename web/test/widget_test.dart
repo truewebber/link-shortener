@@ -12,7 +12,7 @@ import 'package:link_shortener/screens/home_screen.dart';
 import 'mocks/mock_app_config.dart';
 
 void main() {
-  testWidgets('App loads with basic components', (WidgetTester tester) async {
+  testWidgets('App loads with basic components', (tester) async {
     // Create a test configuration
     final config = MockAppConfig();
     

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import '../widgets/url_shortener_form.dart';
-import '../widgets/feature_section.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:link_shortener/widgets/feature_section.dart';
+import 'package:link_shortener/widgets/url_shortener_form.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -56,8 +56,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
   
-  Widget _buildHeroSection(BuildContext context) {
-    return Container(
+  Widget _buildHeroSection(BuildContext context) => Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
       decoration: BoxDecoration(
@@ -66,7 +65,7 @@ class HomeScreen extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             Theme.of(context).colorScheme.primary,
-            Theme.of(context).colorScheme.primary.withOpacity(0.8),
+            Theme.of(context).colorScheme.primary.withAlpha(204),
           ],
         ),
       ),
@@ -77,7 +76,6 @@ class HomeScreen extends StatelessWidget {
           final isTablet = constraints.maxWidth > 600;
           
           return Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 'Shorten Your Links',
@@ -93,7 +91,7 @@ class HomeScreen extends StatelessWidget {
                 child: Text(
                   'Create short, memorable links that redirect to your long URLs. Share them easily on social media, emails, or messages.',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withAlpha(230),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -103,10 +101,8 @@ class HomeScreen extends StatelessWidget {
         },
       ),
     );
-  }
   
-  Widget _buildRobustFooter(BuildContext context) {
-    return Container(
+  Widget _buildRobustFooter(BuildContext context) => Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       color: Colors.grey.shade200,
       child: Column(
@@ -142,7 +138,6 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
     );
-  }
   
   // Widget _buildSimpleFooter(BuildContext context) {
   //   return Container(

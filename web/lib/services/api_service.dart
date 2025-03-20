@@ -1,25 +1,30 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+
 import 'package:flutter/foundation.dart';
-import '../config/app_config.dart';
+import 'package:http/http.dart' as http;
+import 'package:link_shortener/config/app_config.dart';
 
 /// Exception thrown when API requests fail
 class ApiException implements Exception {
+  
+  ApiException(this.message, {this.statusCode});
   final String message;
   final int? statusCode;
   
-  ApiException(this.message, {this.statusCode});
-  
   @override
-  String toString() => 'ApiException: $message${statusCode != null ? ' (Status code: $statusCode)' : ''}';
+  String toString() => 'ApiException: $message${statusCode != null ? """
+ (Status code: $statusCode)""" : ''}';
 }
 
 /// Service for interacting with the Link Shortener API
 class ApiService {
+
+  /// Creates a new API service with the given config
+  /// 
+  /// Optionally, a custom HTTP client can be injected for testing
+  ApiService(this._config, {http.Client? client}) : _client = client ?? http.Client();
   final AppConfig _config;
   final http.Client _client;
-
-  ApiService(this._config) : _client = http.Client();
 
   Uri _buildUrl(String path) {
     final baseUrl = _config.apiBaseUrl;
@@ -49,7 +54,7 @@ class ApiService {
         _buildUrl('/api/restricted_urls'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'url': url}),
-      ).timeout(Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body);
@@ -58,7 +63,7 @@ class ApiService {
         }
         return data['short_url'] as String;
       } else {
-        String errorMessage = 'Failed to shorten URL';
+        var errorMessage = 'Failed to shorten URL';
         
         try {
           final errorData = jsonDecode(response.body);
@@ -104,7 +109,7 @@ class ApiService {
   Future<bool> checkHealth() async {
     try {
       final response = await _client.get(_buildUrl('/health'))
-          .timeout(Duration(seconds: 10));
+          .timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
       if (kDebugMode) {
@@ -123,12 +128,12 @@ class ApiService {
       final response = await _client.get(
         _buildUrl('/api/urls/$urlHash'),
         headers: {'Content-Type': 'application/json'},
-      ).timeout(Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body) as Map<String, dynamic>;
       } else {
-        String errorMessage = 'Failed to get URL information';
+        var errorMessage = 'Failed to get URL information';
         
         try {
           final errorData = jsonDecode(response.body);

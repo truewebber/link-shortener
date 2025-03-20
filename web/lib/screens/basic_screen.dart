@@ -4,8 +4,7 @@ class BasicScreen extends StatelessWidget {
   const BasicScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('Basic Screen'),
         backgroundColor: Colors.blue,
@@ -49,5 +48,4 @@ class BasicScreen extends StatelessWidget {
         ),
       ),
     );
-  }
 } 

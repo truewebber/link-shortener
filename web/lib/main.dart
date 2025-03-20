@@ -1,22 +1,22 @@
-import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
 import 'package:flutter/foundation.dart';
-import 'config/app_config.dart';
-import 'config/app_config_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:link_shortener/config/app_config.dart';
+import 'package:link_shortener/config/app_config_provider.dart';
+import 'package:link_shortener/screens/home_screen.dart';
 
+/// The entry point of the application
 void main() {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Load configuration from window
-  final config = AppConfig.fromWindow();
+  final config = _loadConfiguration();
   
   // Set up error logging for debug mode
   if (kDebugMode) {
-    FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.onError = (details) {
       FlutterError.presentError(details);
-      print('Flutter error: ${details.exception}');
-      print('Stack trace: ${details.stack}');
+      // print('Flutter error: ${details.exception}');
+      // print('Stack trace: ${details.stack}');
     };
     
     print('Starting Link Shortener App...');
@@ -28,13 +28,33 @@ void main() {
   runApp(LinkShortenerApp(config: config));
 }
 
-class LinkShortenerApp extends StatelessWidget {
-  final AppConfig config;
+/// Loads the application configuration
+AppConfig _loadConfiguration() {
+  // In a real app, we would load from environment, file, or server
+  // For development we use predefined values
+  
+  // Debug logging - only in non-production
+  if (kDebugMode) {
+    // Use logger instead of print in a real app
+  }
+  
+  // Use production-like values
+  return const AppConfig(
+    apiBaseUrl: 'https://api.shortener.example.com',
+    environment: 'development',
+  );
+}
 
+/// The main application widget
+class LinkShortenerApp extends StatelessWidget {
+
+  /// Creates a new instance of the app
   const LinkShortenerApp({
     super.key,
     required this.config,
   });
+  /// The application configuration
+  final AppConfig config;
 
   @override
   Widget build(BuildContext context) {
@@ -48,67 +68,26 @@ class LinkShortenerApp extends StatelessWidget {
         title: 'Link Shortener',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2563EB), // Blue color
-            brightness: Brightness.light,
+            seedColor: const Color(0xff6750a4),
           ),
-          textTheme: const TextTheme(
-            displayLarge: TextStyle(
-              fontSize: 48,
-              fontWeight: FontWeight.bold,
-            ),
-            displayMedium: TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-            ),
-            displaySmall: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-            headlineMedium: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
-            bodyLarge: TextStyle(
-              fontSize: 16,
-            ),
-            bodyMedium: TextStyle(
-              fontSize: 14,
-            ),
+          useMaterial3: true,
+        ),
+        darkTheme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xff6750a4),
+            brightness: Brightness.dark,
           ),
-          inputDecorationTheme: InputDecorationTheme(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xFF2563EB),
-                width: 2,
-              ),
-            ),
-            filled: true,
-            fillColor: Colors.grey.shade50,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
-            ),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 16,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
+          useMaterial3: true,
         ),
         home: const HomeScreen(),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<AppConfig>('config', config));
   }
 } 

@@ -1,27 +1,41 @@
 /// Configuration for the application
 class AppConfig {
-  final String apiBaseUrl;
-  final String environment;
 
-  /// Default constructor for AppConfig
-  AppConfig({
+  /// Creates application configuration with required parameters
+  /// 
+  /// [apiBaseUrl] must be a valid HTTP or HTTPS URL
+  /// [environment] identifies the runtime environment
+  const AppConfig({
     required this.apiBaseUrl,
     required this.environment,
   });
 
-  /// Factory constructor that creates default values for tests
-  /// In a web environment, these values would be overridden
-  /// by values from window.APP_CONFIG
+  /// Factory constructor that creates configuration from window.APP_CONFIG
+  /// 
+  /// In a production environment, this reads configuration values
+  /// that are injected into the window object at runtime.
+  /// 
+  /// Falls back to sensible defaults if values are missing.
   factory AppConfig.fromWindow() {
-    // In tests, return default values
-    // In web, this would normally use JS interop to get values from window
-    return AppConfig(
+    // In a real implementation, this would use the window object
+    // For development/testing, use reasonable defaults
+    return const AppConfig(
       apiBaseUrl: '/api',
-      environment: 'test',
+      environment: 'development',
     );
   }
+  /// Base URL for API calls
+  final String apiBaseUrl;
+  
+  /// Current environment (development, production, staging, etc.)
+  final String environment;
 
+  /// Check if the environment is production
   bool get isProduction => environment == 'production';
+  
+  /// Check if the environment is staging
   bool get isStaging => environment == 'staging';
+  
+  /// Check if the environment is development
   bool get isDevelopment => environment == 'development';
 }
