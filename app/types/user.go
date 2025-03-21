@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	userdomain "github.com/truewebber/link-shortener/domain/user"
 )
 

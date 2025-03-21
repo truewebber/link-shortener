@@ -85,8 +85,8 @@ func newHTTPServer(hostPort string) *http.Server {
 	}
 }
 
-func newAppConfig(cfg *config) service.Config {
-	return service.Config{
+func newAppConfig(cfg *config) *service.Config {
+	return &service.Config{
 		PostgresConnectionString: cfg.PostgresConnectionString,
 		GoogleClientID:           cfg.GoogleClientID,
 		GoogleClientSecret:       cfg.GoogleClientSecret,

@@ -26,7 +26,7 @@ func NewRefreshTokenHandler(
 	}
 }
 
-func (h *RefreshTokenHandler) Handle(ctx context.Context, refreshTokenString string) (*types.OAuthResult, error) {
+func (h *RefreshTokenHandler) Handle(ctx context.Context, refreshTokenString string) (*types.Auth, error) {
 	token, err := h.tokenStorage.ByRefreshToken(ctx, refreshTokenString)
 	if errors.Is(err, tokendomain.ErrTokenNotFound) {
 		return nil, apperrors.ErrInvalidCredentials
@@ -54,12 +54,12 @@ func (h *RefreshTokenHandler) Handle(ctx context.Context, refreshTokenString str
 		return nil, fmt.Errorf("generate new token: %w", err)
 	}
 
-	if err := h.tokenStorage.Create(ctx, newToken); err != nil {
-		return nil, fmt.Errorf("create token: %w", err)
+	if createErr := h.tokenStorage.Create(ctx, newToken); createErr != nil {
+		return nil, fmt.Errorf("create token: %w", createErr)
 	}
 
-	if err := h.tokenStorage.DeleteByID(ctx, token.ID); err != nil {
-		return nil, fmt.Errorf("delete token: %w", err)
+	if deleteErr := h.tokenStorage.DeleteByID(ctx, token.ID); deleteErr != nil {
+		return nil, fmt.Errorf("delete token: %w", deleteErr)
 	}
 
 	builtUser, err := types.BuildUserFromDomain(user)
@@ -67,7 +67,7 @@ func (h *RefreshTokenHandler) Handle(ctx context.Context, refreshTokenString str
 		return nil, fmt.Errorf("build user from domain: %w", err)
 	}
 
-	return &types.OAuthResult{
+	return &types.Auth{
 		AccessToken:  newToken.AccessToken,
 		RefreshToken: newToken.RefreshToken,
 		User:         builtUser,

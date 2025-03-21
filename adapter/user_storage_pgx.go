@@ -20,6 +20,7 @@ func NewUserStoragePgx(db *pgxpool.Pool) userdomain.Storage {
 	return &userStoragePgx{db: db}
 }
 
+//nolint:dupword // CURRENT_TIMESTAMP used twice for two different fields.
 const insertUserQuery = `
 		INSERT INTO users (
 			provider_type, provider_user_id, provider_user_email, provider_user_name, 
@@ -125,10 +126,14 @@ const updateUserInfoByID = `
 			updated_at = $4
 		WHERE id = $5 AND NOT deleted;`
 
+const exactOneRowShouldBeUpdated = 1
+
+var errWrongAmountOfRowsAffected = errors.New("wrong amount of rows affected")
+
 func (s *userStoragePgx) Update(ctx context.Context, user *userdomain.User) error {
 	updatedAt := time.Now()
 
-	if _, err := s.db.Exec(
+	cmd, err := s.db.Exec(
 		ctx,
 		updateUserInfoByID,
 		user.Email,
@@ -136,8 +141,13 @@ func (s *userStoragePgx) Update(ctx context.Context, user *userdomain.User) erro
 		user.AvatarURL,
 		updatedAt,
 		user.ID,
-	); err != nil {
+	)
+	if err != nil {
 		return fmt.Errorf("update user: %w", err)
+	}
+
+	if rowsAffected := cmd.RowsAffected(); rowsAffected != exactOneRowShouldBeUpdated {
+		return fmt.Errorf("%w: %v", errWrongAmountOfRowsAffected, rowsAffected)
 	}
 
 	user.UpdatedAt = updatedAt

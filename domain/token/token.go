@@ -47,16 +47,13 @@ const tokenBytesLen = 50
 func generateTokenString() string {
 	tokenBytes := make([]byte, tokenBytesLen)
 
+	//nolint:errcheck // redundant check, rand.Read panic on err inside
 	rand.Read(tokenBytes)
 
 	return base64.URLEncoding.EncodeToString(tokenBytes)
 }
 
-var (
-	ErrTokenNotFound = errors.New("token not found")
-	ErrTokenExpired  = errors.New("token expired")
-	ErrInvalidToken  = errors.New("invalid token")
-)
+var ErrTokenNotFound = errors.New("token not found")
 
 type Storage interface {
 	Create(ctx context.Context, token *Token) error

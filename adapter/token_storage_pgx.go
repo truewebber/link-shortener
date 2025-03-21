@@ -19,6 +19,7 @@ func NewTokenStoragePgx(db *pgxpool.Pool) tokendomain.Storage {
 	return &tokenStoragePgx{db: db}
 }
 
+//nolint:dupword // CURRENT_TIMESTAMP used twice for two different fields.
 const insertTokenQuery = `
 			INSERT INTO tokens (
 				user_id, access_token, refresh_token, 
@@ -43,6 +44,7 @@ func (s *tokenStoragePgx) Create(ctx context.Context, token *tokendomain.Token) 
 	return nil
 }
 
+//nolint:gosec // false positive
 const selectTokenByAccessTokenQuery = `
 		SELECT 
 			id, user_id, access_token, refresh_token, access_token_expires_at,
@@ -51,30 +53,15 @@ const selectTokenByAccessTokenQuery = `
 		WHERE access_token = $1 AND NOT deleted;`
 
 func (s *tokenStoragePgx) ByAccessToken(ctx context.Context, accessToken string) (*tokendomain.Token, error) {
-	t := &tokendomain.Token{}
-
-	err := s.db.QueryRow(ctx, selectTokenByAccessTokenQuery, accessToken).Scan(
-		&t.ID,
-		&t.UserID,
-		&t.AccessToken,
-		&t.RefreshToken,
-		&t.AccessTokenExpiresAt,
-		&t.RefreshTokenExpiresAt,
-		&t.CreatedAt,
-		&t.UpdatedAt,
-	)
-
-	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, tokendomain.ErrTokenNotFound
-	}
-
+	t, err := s.selectToken(ctx, selectTokenByAccessTokenQuery, accessToken)
 	if err != nil {
-		return nil, fmt.Errorf("select token by access token: %w", err)
+		return nil, fmt.Errorf("select token by accessToken: %w", err)
 	}
 
 	return t, nil
 }
 
+//nolint:gosec // false positive
 const selectTokenByRefreshTokenQuery = `
 		SELECT 
 			id, user_id, access_token, refresh_token, access_token_expires_at,
@@ -83,9 +70,20 @@ const selectTokenByRefreshTokenQuery = `
 		WHERE refresh_token = $1 AND NOT deleted;`
 
 func (s *tokenStoragePgx) ByRefreshToken(ctx context.Context, refreshToken string) (*tokendomain.Token, error) {
+	t, err := s.selectToken(ctx, selectTokenByRefreshTokenQuery, refreshToken)
+	if err != nil {
+		return nil, fmt.Errorf("select token by refreshToken: %w", err)
+	}
+
+	return t, nil
+}
+
+func (s *tokenStoragePgx) selectToken(
+	ctx context.Context, sql string, tokenValue string,
+) (*tokendomain.Token, error) {
 	t := &tokendomain.Token{}
 
-	err := s.db.QueryRow(ctx, selectTokenByRefreshTokenQuery, refreshToken).Scan(
+	err := s.db.QueryRow(ctx, sql, tokenValue).Scan(
 		&t.ID,
 		&t.UserID,
 		&t.AccessToken,
@@ -101,12 +99,13 @@ func (s *tokenStoragePgx) ByRefreshToken(ctx context.Context, refreshToken strin
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("select token by refresh token: %w", err)
+		return nil, fmt.Errorf("select token: %w", err)
 	}
 
 	return t, nil
 }
 
+//nolint:gosec // false positive
 const setTokenDeletedByID = "UPDATE tokens SET deleted = true WHERE id = $1;"
 
 func (s *tokenStoragePgx) DeleteByID(ctx context.Context, id uint64) error {
@@ -117,6 +116,7 @@ func (s *tokenStoragePgx) DeleteByID(ctx context.Context, id uint64) error {
 	return nil
 }
 
+//nolint:gosec // false positive
 const setTokenDeletedByUserID = "UPDATE tokens SET deleted = true WHERE user_id = $1"
 
 func (s *tokenStoragePgx) DeleteByUserID(ctx context.Context, userID uint64) error {

@@ -1,17 +1,18 @@
 package httprest
 
 import (
-	"github.com/truewebber/link-shortener/app/query"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/truewebber/gopkg/log"
 	"github.com/truewebber/gopkg/metrics"
 
+	"github.com/truewebber/link-shortener/app/query"
 	"github.com/truewebber/link-shortener/port/httprest/handler"
 	"github.com/truewebber/link-shortener/port/httprest/middleware"
 )
 
+// NewRouterHandler TODO: is it valid to register urls with crossed paths on different sub routers?.
 func NewRouterHandler(
 	linkHandler *handler.LinkHandler,
 	authHandler *handler.AuthHandler,
@@ -45,7 +46,6 @@ func NewRouterHandler(
 	apiRouter.Use(middleware.OptionalAuth(authUser, logger))
 
 	// URL shortening endpoint
-	// TODO: is it valid to register urls with crossed paths on different sub routers?
 	router.HandleFunc("/api/restricted_urls", linkHandler.HandleCreateLink).Methods(http.MethodPost)
 
 	// Redirect handler for shortened URLs

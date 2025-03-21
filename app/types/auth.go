@@ -1,6 +1,6 @@
 package types
 
-type OAuthResult struct {
+type Auth struct {
 	User         *User
 	AccessToken  string
 	RefreshToken string

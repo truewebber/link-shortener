@@ -39,9 +39,8 @@ const (
 	RefreshTokenDuration = 30 * 24 * time.Hour
 )
 
-func (h *SignUpHandler) Handle(ctx context.Context, params SignUpParams) (*types.OAuthResult, error) {
-	// TODO: check if real callback or what ever
-
+// Handle TODO: check if real callback or what ever.
+func (h *SignUpHandler) Handle(ctx context.Context, params SignUpParams) (*types.Auth, error) {
 	provider, err := types.BuildProviderToDomain(params.Provider)
 	if err != nil {
 		return nil, fmt.Errorf("build provider domain: %w", err)
@@ -68,7 +67,7 @@ func (h *SignUpHandler) Handle(ctx context.Context, params SignUpParams) (*types
 		return nil, fmt.Errorf("build user: %w", err)
 	}
 
-	return &types.OAuthResult{
+	return &types.Auth{
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
 		User:         builtUser,
@@ -100,6 +99,8 @@ func (h *SignUpHandler) upsertUser(
 
 		return userToUpsert, nil
 	}
+
+	userToUpsert.ID = existingUser.ID
 
 	updated := false
 

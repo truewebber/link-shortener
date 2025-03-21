@@ -35,10 +35,6 @@ func (h *LogoutHandler) Handle(ctx context.Context, accessToken string) error {
 		return fmt.Errorf("find token: %w", err)
 	}
 
-	if !token.CanBeAuthorized() {
-		return apperrors.ErrTokenExpired
-	}
-
 	if err := h.tokenStorage.DeleteByID(ctx, token.ID); err != nil {
 		return fmt.Errorf("delete token: %w", err)
 	}

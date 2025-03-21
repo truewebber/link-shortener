@@ -2,78 +2,100 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/truewebber/gopkg/log"
 
+	apperrors "github.com/truewebber/link-shortener/app/errors"
 	"github.com/truewebber/link-shortener/app/query"
+	httpcontext "github.com/truewebber/link-shortener/port/httprest/context"
 )
 
-// Auth is a middleware that checks for a valid authentication token
 func Auth(authUser *query.AuthUserHandler, logger log.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Extract token from Authorization header
 			token := extractToken(r)
 			if token == "" {
-				http.Error(w, "Authorization required", http.StatusUnauthorized)
+				http.Error(w, "authorization required", http.StatusUnauthorized)
+
 				return
 			}
 
-			// Verify token and get the user
 			user, err := authUser.Handle(r.Context(), token)
-			if err != nil {
-				logger.Error("Token verification failed: " + err.Error())
+			if errors.Is(err, apperrors.ErrInvalidCredentials) ||
+				errors.Is(err, apperrors.ErrTokenExpired) ||
+				errors.Is(err, apperrors.ErrUserNotFound) {
 				http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), "user", user)
-			ctx = context.WithValue(ctx, "access_token", token)
+			if err != nil {
+				logger.Error("access token verification failed", "token", token, "error", err)
 
-			next.ServeHTTP(w, r.WithContext(ctx))
+				http.Error(w, "internal", http.StatusInternalServerError)
+
+				return
+			}
+
+			outboundCtx := context.WithValue(r.Context(), httpcontext.KeyUser, user)
+			outboundCtx = context.WithValue(outboundCtx, httpcontext.KeyToken, token)
+
+			next.ServeHTTP(w, r.WithContext(outboundCtx))
 		})
 	}
 }
 
-// OptionalAuth is a middleware that adds user to context if auth is provided but continues chain anyway
 func OptionalAuth(authUser *query.AuthUserHandler, logger log.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Extract token from Authorization header
+			outboundCtx := r.Context()
+
 			token := extractToken(r)
-			if token != "" {
-				// Verify token and get the user
-				user, err := authUser.Handle(r.Context(), token)
-				if err != nil {
-					// Log the error but continue without user in context
-					logger.Error("Token verification failed", "token", token, "error", err)
-				}
+			if token == "" {
+				next.ServeHTTP(w, r)
 
-				ctx := context.WithValue(r.Context(), "user", user)
-				ctx = context.WithValue(ctx, "access_token", token)
-
-				next.ServeHTTP(w, r.WithContext(ctx))
 				return
 			}
 
-			// Continue without user context
-			next.ServeHTTP(w, r)
+			outboundCtx = context.WithValue(outboundCtx, httpcontext.KeyToken, token)
+
+			user, err := authUser.Handle(r.Context(), token)
+			if err != nil {
+				if !errors.Is(err, apperrors.ErrInvalidCredentials) &&
+					!errors.Is(err, apperrors.ErrTokenExpired) &&
+					!errors.Is(err, apperrors.ErrUserNotFound) {
+					logger.Error("access token verification failed", "token", token, "error", err)
+				}
+
+				next.ServeHTTP(w, r.WithContext(outboundCtx))
+
+				return
+			}
+
+			outboundCtx = context.WithValue(outboundCtx, httpcontext.KeyUser, user)
+
+			next.ServeHTTP(w, r.WithContext(outboundCtx))
 		})
 	}
 }
 
-// Extract token from Authorization header
+const (
+	tokenPartsCount     = 2
+	authorizationHeader = "Authorization"
+	tokenPrefix         = "Bearer"
+)
+
 func extractToken(r *http.Request) string {
-	authHeader := r.Header.Get("Authorization")
+	authHeader := r.Header.Get(authorizationHeader)
 	if authHeader == "" {
 		return ""
 	}
 
-	// Check the format is "Bearer <token>"
-	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) != 2 || parts[0] != "Bearer" {
+	parts := strings.SplitN(authHeader, " ", tokenPartsCount)
+	if len(parts) != tokenPartsCount || parts[0] != tokenPrefix {
 		return ""
 	}
 

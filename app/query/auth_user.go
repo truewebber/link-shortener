@@ -37,7 +37,7 @@ func (h *AuthUserHandler) Handle(ctx context.Context, accessToken string) (*type
 	}
 
 	if !token.CanBeAuthorized() {
-		return nil, tokendomain.ErrTokenExpired
+		return nil, apperrors.ErrTokenExpired
 	}
 
 	user, err := h.userStorage.ByID(ctx, token.UserID)

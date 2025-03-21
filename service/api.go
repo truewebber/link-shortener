@@ -11,7 +11,7 @@ import (
 	"github.com/truewebber/link-shortener/app/query"
 )
 
-func NewAPIApp(config Config, logger log.Logger) *app.APIApp {
+func NewAPIApp(config *Config, logger log.Logger) *app.APIApp {
 	pool := adapter.MustNewPgxPool(context.Background(), config.PostgresConnectionString)
 
 	hashGen := adapter.MustNewHashGenerator()
