@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users
     provider_user_id    VARCHAR   NOT NULL,
     provider_user_email VARCHAR   NOT NULL,
     provider_user_name  VARCHAR   NOT NULL,
+    provider_avatar_url VARCHAR   NOT NULL,
     created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted             BOOLEAN   NOT NULL
@@ -16,13 +17,36 @@ CREATE UNIQUE INDEX IF NOT EXISTS users__provider_type__provider_user_id__udx
 --
 CREATE TABLE IF NOT EXISTS tokens
 (
-    user_id    BIGINT    NOT NULL REFERENCES users (id),
-    value      VARCHAR   NOT NULL PRIMARY KEY,
-    expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted    BOOLEAN   NOT NULL
+    id                       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id                  BIGINT    NOT NULL REFERENCES users (id),
+    access_token             VARCHAR   NOT NULL,
+    refresh_token            VARCHAR   NOT NULL,
+    access_token_expires_at  TIMESTAMP NOT NULL,
+    refresh_token_expires_at TIMESTAMP NOT NULL,
+    created_at               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted                  BOOLEAN   NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS tokens__user_id__idx
+    ON tokens (user_id)
+    WHERE NOT deleted;
+
+CREATE INDEX IF NOT EXISTS tokens__access_token__idx
+    ON tokens (access_token)
+    WHERE NOT deleted;
+
+CREATE INDEX IF NOT EXISTS tokens__refresh_token__idx
+    ON tokens (refresh_token)
+    WHERE NOT deleted;
+
+CREATE INDEX IF NOT EXISTS tokens__access_token_expires_at__idx
+    ON tokens (access_token_expires_at)
+    WHERE NOT deleted;
+
+CREATE INDEX IF NOT EXISTS tokens__refresh_token_expires_at__idx
+    ON tokens (refresh_token_expires_at)
+    WHERE NOT deleted;
 
 --
 CREATE TABLE IF NOT EXISTS urls

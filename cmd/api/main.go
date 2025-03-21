@@ -32,12 +32,20 @@ func run(logger log.Logger) {
 	app := service.NewAPIApp(appConfig, logger)
 
 	linkHandler := handler.NewLinkHandler(app, cfg.BaseHost, logger)
+	authHandler := handler.NewAuthHandler(app, logger)
 	healthHandler := handler.NewHealthHandler()
 
 	const recorderName = "link-shortener"
 	latencyRecorder := metrics.NewLatencyRecorder(recorderName)
 
-	routerHandler := httprest.NewRouterHandler(linkHandler, healthHandler, latencyRecorder, logger)
+	routerHandler := httprest.NewRouterHandler(
+		linkHandler,
+		authHandler,
+		healthHandler,
+		latencyRecorder,
+		app.Query.AuthUser,
+		logger,
+	)
 
 	logger.Info("starting Link Shortener API server", "address", cfg.AppHostPort)
 
@@ -80,5 +88,13 @@ func newHTTPServer(hostPort string) *http.Server {
 func newAppConfig(cfg *config) service.Config {
 	return service.Config{
 		PostgresConnectionString: cfg.PostgresConnectionString,
+		GoogleClientID:           cfg.GoogleClientID,
+		GoogleClientSecret:       cfg.GoogleClientSecret,
+		AppleClientID:            cfg.AppleClientID,
+		AppleClientSecret:        cfg.AppleClientSecret,
+		GithubClientID:           cfg.GithubClientID,
+		GithubClientSecret:       cfg.GithubClientSecret,
+		OAuthRedirectURL:         cfg.OAuthRedirectURL,
+		JWTSecret:                cfg.JWTSecret,
 	}
 }

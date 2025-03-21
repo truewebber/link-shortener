@@ -11,8 +11,8 @@ import (
 	"github.com/truewebber/link-shortener/app"
 	"github.com/truewebber/link-shortener/app/command"
 	"github.com/truewebber/link-shortener/app/query"
+	apptypes "github.com/truewebber/link-shortener/app/types"
 	"github.com/truewebber/link-shortener/domain/link"
-	"github.com/truewebber/link-shortener/domain/user"
 )
 
 type LinkHandler struct {
@@ -52,7 +52,7 @@ func (h *LinkHandler) HandleCreateLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := &command.CreateLinkParams{
-		UserID:      user.AnonymousUser().ID,
+		UserID:      apptypes.AnonymousUser().ID,
 		RedirectURL: req.URL,
 		ExpiresType: link.ExpiresType3Months,
 	}
