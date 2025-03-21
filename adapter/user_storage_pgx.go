@@ -65,7 +65,7 @@ const selectUserByIDQuery = `
 
 func (s *userStoragePgx) ByID(ctx context.Context, id uint64) (*userdomain.User, error) {
 	user := &userdomain.User{}
-	var providerType uint8
+	providerType := uint8(0)
 
 	err := s.db.QueryRow(ctx, selectUserByIDQuery, id).Scan(
 		&user.ID,
@@ -105,7 +105,7 @@ func (s *userStoragePgx) ByProviderID(
 	ctx context.Context, provider userdomain.Provider, providerID string,
 ) (*userdomain.User, error) {
 	user := &userdomain.User{}
-	var providerType uint8
+	providerType := uint8(0)
 
 	err := s.db.QueryRow(ctx, selectUserByProviderQuery, provider, providerID).Scan(
 		&user.ID,
