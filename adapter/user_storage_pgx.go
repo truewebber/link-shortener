@@ -30,22 +30,27 @@ const insertUserQuery = `
 		RETURNING id, created_at, updated_at;`
 
 func (s *userStoragePgx) Create(ctx context.Context, user *userdomain.User) error {
-	err := s.db.QueryRow(
+	providerType, err := s.buildProviderTypePGX(user.Provider)
+	if err != nil {
+		return fmt.Errorf("build provider type pgx: %w", err)
+	}
+
+	queryErr := s.db.QueryRow(
 		ctx,
 		insertUserQuery,
-		user.Provider,
+		providerType,
 		user.ProviderID,
 		user.Email,
 		user.Name,
 		user.AvatarURL,
 	).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
 
-	if errors.Is(err, pgx.ErrNoRows) {
+	if errors.Is(queryErr, pgx.ErrNoRows) {
 		return userdomain.ErrAlreadyExists
 	}
 
-	if err != nil {
-		return fmt.Errorf("insert user: %w", err)
+	if queryErr != nil {
+		return fmt.Errorf("insert user: %w", queryErr)
 	}
 
 	return nil
@@ -59,17 +64,18 @@ const selectUserByIDQuery = `
 		WHERE id = $1 AND NOT deleted;`
 
 func (s *userStoragePgx) ByID(ctx context.Context, id uint64) (*userdomain.User, error) {
-	u := &userdomain.User{}
+	user := &userdomain.User{}
+	var providerType uint8
 
 	err := s.db.QueryRow(ctx, selectUserByIDQuery, id).Scan(
-		&u.ID,
-		&u.Provider,
-		&u.ProviderID,
-		&u.Email,
-		&u.Name,
-		&u.AvatarURL,
-		&u.CreatedAt,
-		&u.UpdatedAt,
+		&user.ID,
+		&providerType,
+		&user.ProviderID,
+		&user.Email,
+		&user.Name,
+		&user.AvatarURL,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 	)
 
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -80,7 +86,12 @@ func (s *userStoragePgx) ByID(ctx context.Context, id uint64) (*userdomain.User,
 		return nil, fmt.Errorf("select user by id: %w", err)
 	}
 
-	return u, nil
+	user.Provider, err = s.buildProviderTypeDomain(providerType)
+	if err != nil {
+		return nil, fmt.Errorf("build provider type domain: %w", err)
+	}
+
+	return user, nil
 }
 
 const selectUserByProviderQuery = `
@@ -93,17 +104,18 @@ const selectUserByProviderQuery = `
 func (s *userStoragePgx) ByProviderID(
 	ctx context.Context, provider userdomain.Provider, providerID string,
 ) (*userdomain.User, error) {
-	u := &userdomain.User{}
+	user := &userdomain.User{}
+	var providerType uint8
 
 	err := s.db.QueryRow(ctx, selectUserByProviderQuery, provider, providerID).Scan(
-		&u.ID,
-		&u.Provider,
-		&u.ProviderID,
-		&u.Email,
-		&u.Name,
-		&u.AvatarURL,
-		&u.CreatedAt,
-		&u.UpdatedAt,
+		&user.ID,
+		&user.Provider,
+		&user.ProviderID,
+		&user.Email,
+		&user.Name,
+		&user.AvatarURL,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 	)
 
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -114,7 +126,12 @@ func (s *userStoragePgx) ByProviderID(
 		return nil, fmt.Errorf("select user by provider: %w", err)
 	}
 
-	return u, nil
+	user.Provider, err = s.buildProviderTypeDomain(providerType)
+	if err != nil {
+		return nil, fmt.Errorf("build provider type domain: %w", err)
+	}
+
+	return user, nil
 }
 
 const updateUserInfoByID = `
@@ -166,4 +183,43 @@ func (s *userStoragePgx) Delete(ctx context.Context, id uint64) error {
 	}
 
 	return nil
+}
+
+const (
+	providerTypeAnonymous = 1
+	providerTypeGoogle    = 2
+	providerTypeApple     = 3
+	providerTypeGithub    = 4
+)
+
+var errUnknownProviderType = errors.New("unknown provider type")
+
+func (s *userStoragePgx) buildProviderTypePGX(provider userdomain.Provider) (uint8, error) {
+	switch provider {
+	case userdomain.ProviderAnonymous:
+		return providerTypeAnonymous, nil
+	case userdomain.ProviderGoogle:
+		return providerTypeGoogle, nil
+	case userdomain.ProviderApple:
+		return providerTypeApple, nil
+	case userdomain.ProviderGithub:
+		return providerTypeGithub, nil
+	}
+
+	return 0, errUnknownProviderType
+}
+
+func (s *userStoragePgx) buildProviderTypeDomain(provider uint8) (userdomain.Provider, error) {
+	switch provider {
+	case providerTypeAnonymous:
+		return userdomain.ProviderAnonymous, nil
+	case providerTypeGoogle:
+		return userdomain.ProviderGoogle, nil
+	case providerTypeApple:
+		return userdomain.ProviderApple, nil
+	case providerTypeGithub:
+		return userdomain.ProviderGithub, nil
+	}
+
+	return 0, errUnknownProviderType
 }
