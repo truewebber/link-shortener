@@ -51,7 +51,7 @@ func buildProviders(oauthConfig *OAuth, logger log.Logger) map[types.Provider]us
 		oauthConfig.Github.RedirectURL,
 		logger,
 	)
-	appleProvider := adapter.MustNewAppleOAuthProvider(
+	appleProvider := adapter.NewAppleOAuthProvider(
 		oauthConfig.Apple.ClientID,
 		oauthConfig.Apple.RedirectURL,
 		oauthConfig.Apple.KeyID,
@@ -82,8 +82,7 @@ type OAuth struct {
 }
 
 type Apple struct {
-	ClientID, KeyID, TeamID, RedirectURL string
-	PrivateKey                           []byte
+	ClientID, KeyID, TeamID, RedirectURL, PrivateKey string
 }
 
 type Standard struct {

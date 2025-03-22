@@ -111,7 +111,7 @@ func newAppConfig(cfg *config) *service.Config {
 			},
 			Apple: service.Apple{
 				ClientID:    cfg.AppleClientID,
-				PrivateKey:  []byte(cfg.ApplePrivateKey),
+				PrivateKey:  cfg.ApplePrivateKey,
 				KeyID:       cfg.AppleKeyID,
 				TeamID:      cfg.AppleTeamID,
 				RedirectURL: buildCallbackURL(cfg.BaseHost, appleCallbackPath),
