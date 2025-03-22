@@ -158,7 +158,7 @@ func (h *FinishOAuthHandler) upsertUser(
 ) (*userdomain.User, error) {
 	existingUser, err := h.userStorage.ByProviderID(ctx, provider, providerID)
 	if err != nil && !errors.Is(err, userdomain.ErrUserNotFound) {
-		return nil, fmt.Errorf("find userdomain by provider: %w", err)
+		return nil, fmt.Errorf("find user by provider id: %w", err)
 	}
 
 	userToUpsert := &userdomain.User{

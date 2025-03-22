@@ -27,8 +27,8 @@ type AuthHandler struct {
 
 func NewAuthHandler(
 	app *app.APIApp,
-	logger log.Logger,
 	cookieDomain string,
+	logger log.Logger,
 ) *AuthHandler {
 	return &AuthHandler{
 		app:          app,
@@ -102,7 +102,7 @@ func (h *AuthHandler) buildStateCooke(state string) *http.Cookie {
 		Name:     stateCookieName,
 		Value:    state,
 		Path:     "/",
-		Secure:   true,
+		Secure:   false,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 		Domain:   h.cookieDomain,

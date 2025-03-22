@@ -69,11 +69,7 @@ func buildProviders(oauthConfig *OAuth, logger log.Logger) map[types.Provider]us
 
 type Config struct {
 	PostgresConnectionString string
-	ServerAddress            string
-	BaseURL                  string
-	CookieDomain             string
 	OAuth                    OAuth
-	SecureCookies            bool
 }
 
 type OAuth struct {

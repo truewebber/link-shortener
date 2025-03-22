@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"net/url"
+	"strings"
 	"syscall"
 	"time"
 
@@ -33,7 +34,7 @@ func run(logger log.Logger) {
 	app := service.NewAPIApp(appConfig, logger)
 
 	linkHandler := handler.NewLinkHandler(app, cfg.BaseHost, logger)
-	authHandler := handler.NewAuthHandler(app, logger, cfg.BaseHost)
+	authHandler := handler.NewAuthHandler(app, extractDomainFromHost(cfg.BaseHost), logger)
 	healthHandler := handler.NewHealthHandler()
 
 	const recorderName = "link-shortener"
@@ -70,6 +71,15 @@ func run(logger log.Logger) {
 	logger.Info("server stopped")
 }
 
+func extractDomainFromHost(host string) string {
+	if !strings.Contains(host, ":") {
+		return host
+	}
+
+	parts := strings.SplitN(host, ":", 2)
+	return parts[0]
+}
+
 func newHTTPServer(hostPort string) *http.Server {
 	const (
 		readTimeout  = 5 * time.Second
@@ -89,15 +99,12 @@ func newHTTPServer(hostPort string) *http.Server {
 func newAppConfig(cfg *config) *service.Config {
 	const (
 		googleCallbackPath = "/api/auth/google/callback"
-		githubCallbackPath = "/api/auth/google/callback"
-		appleCallbackPath  = "/api/auth/google/callback"
+		githubCallbackPath = "/api/auth/github/callback"
+		appleCallbackPath  = "/api/auth/apple/callback"
 	)
 
 	return &service.Config{
 		PostgresConnectionString: cfg.PostgresConnectionString,
-		ServerAddress:            cfg.AppHostPort,
-		BaseURL:                  cfg.BaseHost,
-
 		OAuth: service.OAuth{
 			Google: service.Standard{
 				ClientID:     cfg.GoogleClientID,

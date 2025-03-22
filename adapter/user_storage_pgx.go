@@ -96,8 +96,8 @@ func (s *userStoragePgx) ByID(ctx context.Context, id uint64) (*userdomain.User,
 
 const selectUserByProviderQuery = `
 		SELECT 
-			id, provider_type, provider_user_id, provider_user_email, 
-			provider_user_name, provider_avatar_url, created_at, updated_at
+			id, provider_user_email, provider_user_name,
+			provider_avatar_url, created_at, updated_at
 		FROM users
 		WHERE provider_type = $1 AND provider_user_id = $2 AND NOT deleted;`
 
@@ -105,12 +105,14 @@ func (s *userStoragePgx) ByProviderID(
 	ctx context.Context, provider userdomain.Provider, providerID string,
 ) (*userdomain.User, error) {
 	user := &userdomain.User{}
-	providerType := uint8(0)
 
-	err := s.db.QueryRow(ctx, selectUserByProviderQuery, provider, providerID).Scan(
+	providerType, err := s.buildProviderTypePGX(provider)
+	if err != nil {
+		return nil, fmt.Errorf("build provider type pgx: %w", err)
+	}
+
+	queryErr := s.db.QueryRow(ctx, selectUserByProviderQuery, providerType, providerID).Scan(
 		&user.ID,
-		&user.Provider,
-		&user.ProviderID,
 		&user.Email,
 		&user.Name,
 		&user.AvatarURL,
@@ -118,18 +120,16 @@ func (s *userStoragePgx) ByProviderID(
 		&user.UpdatedAt,
 	)
 
-	if errors.Is(err, pgx.ErrNoRows) {
+	if errors.Is(queryErr, pgx.ErrNoRows) {
 		return nil, userdomain.ErrUserNotFound
 	}
 
-	if err != nil {
-		return nil, fmt.Errorf("select user by provider: %w", err)
+	if queryErr != nil {
+		return nil, fmt.Errorf("select user by provider: %w", queryErr)
 	}
 
-	user.Provider, err = s.buildProviderTypeDomain(providerType)
-	if err != nil {
-		return nil, fmt.Errorf("build provider type domain: %w", err)
-	}
+	user.ProviderID = providerID
+	user.Provider = provider
 
 	return user, nil
 }

@@ -35,11 +35,11 @@ func NewRouterHandler(
 
 	// OAuth provider endpoints
 	router.HandleFunc(
-		"/api/auth/{provider:[google|apple|github]}",
+		"/api/auth/{provider:(?:google|apple|github)}",
 		authHandler.StartOAuth,
 	).Methods(http.MethodGet)
 	router.HandleFunc(
-		"/api/auth/{provider:[google|apple|github]}/callback",
+		"/api/auth/{provider:(?:google|apple|github)}/callback",
 		authHandler.OAuthCallback,
 	)
 
