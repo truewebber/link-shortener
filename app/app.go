@@ -12,7 +12,7 @@ type APIApp struct {
 
 type APICommand struct {
 	CreateLink   *command.CreateLinkHandler
-	SignUp       *command.SignUpHandler
+	FinishOAuth  *command.FinishOAuthHandler
 	Logout       *command.LogoutHandler
 	RefreshToken *command.RefreshTokenHandler
 }
@@ -20,4 +20,5 @@ type APICommand struct {
 type APIQuery struct {
 	GetLinkByHash *query.GetLinkByHashHandler
 	AuthUser      *query.AuthUserHandler
+	GetAuthURL    *query.GetAuthURLHandler
 }

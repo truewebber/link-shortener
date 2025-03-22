@@ -15,7 +15,7 @@ type HealthResponse struct {
 	Status string `json:"status"`
 }
 
-func (h *HealthHandler) HandleHealth(w http.ResponseWriter, _ *http.Request) {
+func (h *HealthHandler) Health(w http.ResponseWriter, _ *http.Request) {
 	resp := HealthResponse{
 		Status: "ok",
 	}

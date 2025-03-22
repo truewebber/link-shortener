@@ -12,7 +12,6 @@ import (
 	"github.com/truewebber/link-shortener/port/httprest/middleware"
 )
 
-// NewRouterHandler TODO: is it valid to register urls with crossed paths on different sub routers?.
 func NewRouterHandler(
 	linkHandler *handler.LinkHandler,
 	authHandler *handler.AuthHandler,
@@ -29,27 +28,32 @@ func NewRouterHandler(
 	)
 
 	// Public health check endpoint
-	router.HandleFunc("/health", healthHandler.HandleHealth).Methods(http.MethodGet)
+	router.HandleFunc("/health", healthHandler.Health).Methods(http.MethodGet)
 
-	// Public auth endpoints
-	router.HandleFunc("/api/auth/oauth", authHandler.HandleOAuth).Methods(http.MethodPost)
-	router.HandleFunc("/api/auth/refresh", authHandler.HandleRefreshToken).Methods(http.MethodPost)
+	// Public auth endpoint
+	router.HandleFunc("/api/auth/refresh", authHandler.RefreshToken).Methods(http.MethodPost)
+
+	// OAuth provider endpoints
+	router.HandleFunc(
+		"/api/auth/{provider:[google|apple|github]}",
+		authHandler.StartOAuth,
+	).Methods(http.MethodGet)
+	router.HandleFunc(
+		"/api/auth/{provider:[google|apple|github]}/callback",
+		authHandler.OAuthCallback,
+	)
 
 	// Protected auth endpoints
 	authRouter := router.PathPrefix("/api/auth").Subrouter()
 	authRouter.Use(middleware.Auth(authUser, logger))
-	authRouter.HandleFunc("/logout", authHandler.HandleLogout).Methods(http.MethodPost)
-	authRouter.HandleFunc("/me", authHandler.HandleMe).Methods(http.MethodGet)
+	authRouter.HandleFunc("/logout", authHandler.Logout).Methods(http.MethodPost)
+	authRouter.HandleFunc("/me", authHandler.Me).Methods(http.MethodGet)
 
-	// API endpoints with optional authentication
-	apiRouter := router.PathPrefix("/api").Subrouter()
-	apiRouter.Use(middleware.OptionalAuth(authUser, logger))
-
-	// URL shortening endpoint
-	router.HandleFunc("/api/restricted_urls", linkHandler.HandleCreateLink).Methods(http.MethodPost)
+	// URL shortening endpoint for public usage
+	router.HandleFunc("/api/restricted_urls", linkHandler.CreateLink).Methods(http.MethodPost)
 
 	// Redirect handler for shortened URLs
-	router.HandleFunc("/{hash:[0-9a-zA-Z]+}", linkHandler.HandleRedirect).Methods(http.MethodGet)
+	router.HandleFunc("/{hash:[0-9a-zA-Z]+}", linkHandler.Redirect).Methods(http.MethodGet)
 
 	return router
 }

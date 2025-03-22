@@ -4,13 +4,16 @@ go 1.24.0
 
 require (
 	github.com/Netflix/go-env v0.1.2
+	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/gorilla/mux v1.8.1
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/sqids/sqids-go v0.4.1
 	github.com/truewebber/gopkg v1.3.0
+	golang.org/x/oauth2 v0.28.0
 )
 
 require (
+	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/go-kit/kit v0.13.0 // indirect

@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"net/url"
 	"syscall"
 	"time"
 
@@ -32,7 +33,7 @@ func run(logger log.Logger) {
 	app := service.NewAPIApp(appConfig, logger)
 
 	linkHandler := handler.NewLinkHandler(app, cfg.BaseHost, logger)
-	authHandler := handler.NewAuthHandler(app, logger)
+	authHandler := handler.NewAuthHandler(app, logger, cfg.BaseHost)
 	healthHandler := handler.NewHealthHandler()
 
 	const recorderName = "link-shortener"
@@ -86,15 +87,47 @@ func newHTTPServer(hostPort string) *http.Server {
 }
 
 func newAppConfig(cfg *config) *service.Config {
+	const (
+		googleCallbackPath = "/api/auth/google/callback"
+		githubCallbackPath = "/api/auth/google/callback"
+		appleCallbackPath  = "/api/auth/google/callback"
+	)
+
 	return &service.Config{
 		PostgresConnectionString: cfg.PostgresConnectionString,
-		GoogleClientID:           cfg.GoogleClientID,
-		GoogleClientSecret:       cfg.GoogleClientSecret,
-		AppleClientID:            cfg.AppleClientID,
-		AppleClientSecret:        cfg.AppleClientSecret,
-		GithubClientID:           cfg.GithubClientID,
-		GithubClientSecret:       cfg.GithubClientSecret,
-		OAuthRedirectURL:         cfg.OAuthRedirectURL,
-		JWTSecret:                cfg.JWTSecret,
+		ServerAddress:            cfg.AppHostPort,
+		BaseURL:                  cfg.BaseHost,
+
+		OAuth: service.OAuth{
+			Google: service.Standard{
+				ClientID:     cfg.GoogleClientID,
+				ClientSecret: cfg.GoogleClientSecret,
+				RedirectURL:  buildCallbackURL(cfg.BaseHost, googleCallbackPath),
+			},
+			Github: service.Standard{
+				ClientID:     cfg.GithubClientID,
+				ClientSecret: cfg.GithubClientSecret,
+				RedirectURL:  buildCallbackURL(cfg.BaseHost, githubCallbackPath),
+			},
+			Apple: service.Apple{
+				ClientID:    cfg.AppleClientID,
+				PrivateKey:  []byte(cfg.ApplePrivateKey),
+				KeyID:       cfg.AppleKeyID,
+				TeamID:      cfg.AppleTeamID,
+				RedirectURL: buildCallbackURL(cfg.BaseHost, appleCallbackPath),
+			},
+		},
 	}
+}
+
+func buildCallbackURL(baseHost, path string) string {
+	const httpsScheme = "https"
+
+	callback := &url.URL{
+		Scheme: httpsScheme,
+		Host:   baseHost,
+		Path:   path,
+	}
+
+	return callback.String()
 }

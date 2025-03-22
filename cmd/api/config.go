@@ -12,17 +12,16 @@ type config struct {
 	BaseHost                 string `env:"BASE_HOST,required=true"`
 	PostgresConnectionString string `env:"POSTGRES_CONNECTION_STRING,required=true"`
 
-	// OAuth settings
-	GoogleClientID     string `env:"GOOGLE_CLIENT_ID"`
-	GoogleClientSecret string `env:"GOOGLE_CLIENT_SECRET"`
-	AppleClientID      string `env:"APPLE_CLIENT_ID"`
-	AppleClientSecret  string `env:"APPLE_CLIENT_SECRET"`
-	GithubClientID     string `env:"GITHUB_CLIENT_ID"`
-	GithubClientSecret string `env:"GITHUB_CLIENT_SECRET"`
-	OAuthRedirectURL   string `env:"OAUTH_REDIRECT_URL"`
+	GoogleClientID     string `env:"GOOGLE_CLIENT_ID,required=true"`
+	GoogleClientSecret string `env:"GOOGLE_CLIENT_SECRET,required=true"`
 
-	// JWT settings
-	JWTSecret string `env:"JWT_SECRET,required=true"`
+	AppleClientID   string `env:"APPLE_CLIENT_ID,required=true"`
+	ApplePrivateKey string `env:"APPLE_PRIVATE_KEY,required=true"`
+	AppleKeyID      string `env:"APPLE_KEY_ID,required=true"`
+	AppleTeamID     string `env:"APPLE_TEAM_ID,required=true"`
+
+	GithubClientID     string `env:"GITHUB_CLIENT_ID,required=true"`
+	GithubClientSecret string `env:"GITHUB_CLIENT_SECRET,required=true"`
 }
 
 func mustLoadConfig() *config {

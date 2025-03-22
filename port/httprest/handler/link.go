@@ -41,7 +41,7 @@ type CreateLinkResponse struct {
 	ShortURL string `json:"short_url"`
 }
 
-func (h *LinkHandler) HandleCreateLink(w http.ResponseWriter, r *http.Request) {
+func (h *LinkHandler) CreateLink(w http.ResponseWriter, r *http.Request) {
 	var req CreateLinkRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -80,7 +80,7 @@ func (h *LinkHandler) HandleCreateLink(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *LinkHandler) HandleRedirect(w http.ResponseWriter, r *http.Request) {
+func (h *LinkHandler) Redirect(w http.ResponseWriter, r *http.Request) {
 	pathVars := mux.Vars(r)
 	hash, ok := pathVars["hash"]
 

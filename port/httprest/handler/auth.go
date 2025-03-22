@@ -1,11 +1,15 @@
 package handler
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 
+	"github.com/gorilla/mux"
 	"github.com/truewebber/gopkg/log"
 
 	"github.com/truewebber/link-shortener/app"
@@ -16,23 +20,21 @@ import (
 )
 
 type AuthHandler struct {
-	app    *app.APIApp
-	logger log.Logger
+	app          *app.APIApp
+	logger       log.Logger
+	cookieDomain string
 }
 
-func NewAuthHandler(app *app.APIApp, logger log.Logger) *AuthHandler {
+func NewAuthHandler(
+	app *app.APIApp,
+	logger log.Logger,
+	cookieDomain string,
+) *AuthHandler {
 	return &AuthHandler{
-		app:    app,
-		logger: logger,
+		app:          app,
+		logger:       logger,
+		cookieDomain: cookieDomain,
 	}
-}
-
-type oauthRequest struct {
-	Provider   string `json:"provider"`
-	ProviderID string `json:"provider_id"`
-	Email      string `json:"email"`
-	Name       string `json:"name"`
-	AvatarURL  string `json:"avatar_url,omitempty"`
 }
 
 type authResponse struct {
@@ -53,62 +55,148 @@ type refreshRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func (h *AuthHandler) HandleOAuth(w http.ResponseWriter, r *http.Request) {
-	var req oauthRequest
+func (h *AuthHandler) StartOAuth(w http.ResponseWriter, r *http.Request) {
+	pathVars := mux.Vars(r)
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
-
-		return
-	}
-
-	provider, err := h.buildToUseCaseProvider(req.Provider)
+	provider, err := h.buildToUseCaseProvider(pathVars["provider"])
 	if err != nil {
 		http.Error(w, "invalid provider", http.StatusBadRequest)
 
 		return
 	}
 
-	params := command.SignUpParams{
-		Provider:   provider,
-		ProviderID: req.ProviderID,
-		Email:      req.Email,
-		Name:       req.Name,
-		AvatarURL:  req.AvatarURL,
-	}
+	state := h.generateState()
 
-	auth, err := h.app.Command.SignUp.Handle(r.Context(), params)
+	response, err := h.app.Query.GetAuthURL.Handle(r.Context(), provider, state)
 	if err != nil {
-		h.logger.Error("failed handle SignUp", "params", params, "error", err)
-
-		http.Error(w, "authentication failed", http.StatusInternalServerError)
-
-		return
-	}
-
-	response, err := h.buildAuthResponse(auth)
-	if err != nil {
-		h.logger.Error("failed build auth response", "auth_data", auth, "params", params, "error", err)
+		h.logger.Error("failed to get auth url", "provider", provider, "error", err)
 
 		http.Error(w, "internal", http.StatusInternalServerError)
 
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	cookie := h.buildStateCooke(state)
+	http.SetCookie(w, cookie)
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		h.logger.Error("Failed to json encode response",
-			"response", response, "params", params, "error", err,
-		)
+	http.Redirect(w, r, response.URL, http.StatusFound)
+}
 
-		http.Error(w, "internal", http.StatusInternalServerError)
+const stateBytesLen = 32
 
-		return
+func (h *AuthHandler) generateState() string {
+	b := make([]byte, stateBytesLen)
+	//nolint:errcheck // redundant check, rand.Read panic on err inside
+	rand.Read(b)
+
+	return base64.StdEncoding.EncodeToString(b)
+}
+
+const (
+	stateCookieName   = "oauth_state"
+	stateCookieMaxAge = 300
+)
+
+func (h *AuthHandler) buildStateCooke(state string) *http.Cookie {
+	return &http.Cookie{
+		Name:     stateCookieName,
+		Value:    state,
+		Path:     "/",
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Domain:   h.cookieDomain,
+		MaxAge:   stateCookieMaxAge,
 	}
 }
 
-func (h *AuthHandler) HandleRefreshToken(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) validateState(r *http.Request, state string) bool {
+	cookie, err := r.Cookie(stateCookieName)
+	if err != nil {
+		return false
+	}
+
+	return cookie.Value == state
+}
+
+func (h *AuthHandler) OAuthCallback(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		redirectURL := h.buildRedirectErrorURL("invalid request")
+		http.Redirect(w, r, redirectURL, http.StatusFound)
+
+		return
+	}
+
+	state := r.FormValue("state")
+	if !h.validateState(r, state) {
+		redirectURL := h.buildRedirectErrorURL("invalid state")
+		http.Redirect(w, r, redirectURL, http.StatusFound)
+
+		return
+	}
+
+	pathVars := mux.Vars(r)
+
+	provider, err := h.buildToUseCaseProvider(pathVars["provider"])
+	if err != nil {
+		redirectURL := h.buildRedirectErrorURL("invalid request")
+		http.Redirect(w, r, redirectURL, http.StatusFound)
+
+		return
+	}
+
+	code := r.FormValue("code")
+	userData := r.FormValue("user")
+	errorMsg := r.FormValue("error")
+
+	params := command.FinishOAuthParams{
+		Provider:     provider,
+		Code:         code,
+		ErrorMessage: errorMsg,
+		UserData:     []byte(userData),
+	}
+
+	oauthInfo, err := h.app.Command.FinishOAuth.Handle(r.Context(), params)
+	if err != nil {
+		h.logger.Error("failed handle FinishOAuth", "params", params, "error", err)
+
+		redirectURL := h.buildRedirectErrorURL("unknown error")
+		http.Redirect(w, r, redirectURL, http.StatusFound)
+
+		return
+	}
+
+	redirectURL := h.buildRedirectSuccessURL(oauthInfo.AccessToken)
+	http.Redirect(w, r, redirectURL, http.StatusFound)
+}
+
+func (h *AuthHandler) buildRedirectSuccessURL(accessToken string) string {
+	query := url.Values{}
+	query.Add("access_token", accessToken)
+
+	redirectURL := url.URL{
+		Path: "/app/auth/success",
+	}
+
+	redirectURL.RawQuery = query.Encode()
+
+	return redirectURL.String()
+}
+
+func (h *AuthHandler) buildRedirectErrorURL(errorMessage string) string {
+	query := url.Values{}
+	query.Add("error", errorMessage)
+
+	redirectURL := url.URL{
+		Path: "/app/auth/fail",
+	}
+
+	redirectURL.RawQuery = query.Encode()
+
+	return redirectURL.String()
+}
+
+func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	var req refreshRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -160,7 +248,7 @@ func (h *AuthHandler) HandleRefreshToken(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	accessToken, ok := r.Context().Value(context.KeyToken).(string)
 	if !ok {
 		http.Error(w, "authorization token required", http.StatusUnauthorized)
@@ -186,7 +274,7 @@ func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *AuthHandler) HandleMe(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value(context.KeyUser).(*apptypes.User)
 	if !ok {
 		http.Error(w, "authentication required", http.StatusUnauthorized)
