@@ -67,7 +67,7 @@ func (p *appleOAuthProvider) GetAuthURL(state string) (string, error) {
 		Endpoint:     p.endpoint,
 	}
 
-	return config.AuthCodeURL(state), nil
+	return config.AuthCodeURL(state, oauth2.SetAuthURLParam("response_mode", "form_post")), nil
 }
 
 var errVerifyWebTokenGotError = errors.New("error verifying WebToken")

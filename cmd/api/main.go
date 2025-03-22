@@ -76,7 +76,9 @@ func extractDomainFromHost(host string) string {
 		return host
 	}
 
-	parts := strings.SplitN(host, ":", 2)
+	const splintHostAmount = 2
+	parts := strings.SplitN(host, ":", splintHostAmount)
+
 	return parts[0]
 }
 
