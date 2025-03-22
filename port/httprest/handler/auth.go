@@ -102,9 +102,9 @@ func (h *AuthHandler) buildStateCooke(state string) *http.Cookie {
 		Name:     stateCookieName,
 		Value:    state,
 		Path:     "/",
-		Secure:   false,
+		Secure:   true,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 		Domain:   h.cookieDomain,
 		MaxAge:   stateCookieMaxAge,
 	}
