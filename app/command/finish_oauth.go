@@ -83,9 +83,8 @@ func (h *FinishOAuthHandler) Handle(ctx context.Context, params FinishOAuthParam
 	}
 
 	return &types.Auth{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-		User:         builtUser,
+		Token: types.BuildTokenFromDomain(token),
+		User:  builtUser,
 	}, nil
 }
 

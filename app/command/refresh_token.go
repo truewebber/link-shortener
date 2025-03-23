@@ -68,8 +68,7 @@ func (h *RefreshTokenHandler) Handle(ctx context.Context, refreshTokenString str
 	}
 
 	return &types.Auth{
-		AccessToken:  newToken.AccessToken,
-		RefreshToken: newToken.RefreshToken,
-		User:         builtUser,
+		Token: types.BuildTokenFromDomain(newToken),
+		User:  builtUser,
 	}, nil
 }

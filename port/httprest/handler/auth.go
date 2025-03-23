@@ -38,9 +38,10 @@ func NewAuthHandler(
 }
 
 type authResponse struct {
-	User         *userInfo `json:"user"`
-	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
+	User                *userInfo `json:"user"`
+	AccessToken         string    `json:"access_token"`
+	RefreshToken        string    `json:"refresh_token"`
+	AccessTokenExpiryMS int64     `json:"access_token_expiry_ms"`
 }
 
 type userInfo struct {
@@ -166,7 +167,7 @@ func (h *AuthHandler) OAuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	redirectURL := h.buildRedirectSuccessURL(oauthInfo.AccessToken)
+	redirectURL := h.buildRedirectSuccessURL(oauthInfo.Token.AccessToken)
 	http.Redirect(w, r, redirectURL, http.StatusFound)
 }
 
@@ -348,9 +349,10 @@ func (h *AuthHandler) buildAuthResponse(auth *apptypes.Auth) (*authResponse, err
 	}
 
 	return &authResponse{
-		AccessToken:  auth.AccessToken,
-		RefreshToken: auth.RefreshToken,
-		User:         user,
+		AccessToken:         auth.Token.AccessToken,
+		AccessTokenExpiryMS: auth.Token.AccessTokenExpiresAt.UnixMilli(),
+		RefreshToken:        auth.Token.RefreshToken,
+		User:                user,
 	}, nil
 }
 
