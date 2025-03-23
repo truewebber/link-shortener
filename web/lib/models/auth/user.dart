@@ -44,32 +44,3 @@ class User {
     }
   }
 }
-
-class UserSession {
-  const UserSession({
-    required this.user,
-    required this.token,
-    required this.expiresAt,
-    this.refreshToken,
-  });
-
-  factory UserSession.fromJson(Map<String, dynamic> json) => UserSession(
-        user: User.fromJson(json['user'] as Map<String, dynamic>),
-        token: json['token'] as String,
-        refreshToken: json['refresh_token'] as String?,
-        expiresAt: DateTime.parse(json['expires_at'] as String),
-      );
-  final User user;
-  final String token;
-  final String? refreshToken;
-  final DateTime expiresAt;
-
-  Map<String, dynamic> toJson() => {
-        'user': user.toJson(),
-        'token': token,
-        'refresh_token': refreshToken,
-        'expires_at': expiresAt.toIso8601String(),
-      };
-
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
-}

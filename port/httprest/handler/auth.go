@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/truewebber/gopkg/log"
@@ -167,13 +169,21 @@ func (h *AuthHandler) OAuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	redirectURL := h.buildRedirectSuccessURL(oauthInfo.Token.AccessToken)
+	redirectURL := h.buildRedirectSuccessURL(
+		oauthInfo.Token.AccessToken, oauthInfo.Token.RefreshToken, oauthInfo.Token.AccessTokenExpiresAt,
+	)
 	http.Redirect(w, r, redirectURL, http.StatusFound)
 }
 
-func (h *AuthHandler) buildRedirectSuccessURL(accessToken string) string {
+const decimalBase = 10
+
+func (h *AuthHandler) buildRedirectSuccessURL(
+	accessToken string, refreshToken string, expiresAt time.Time,
+) string {
 	query := url.Values{}
 	query.Add("access_token", accessToken)
+	query.Add("refresh_token", refreshToken)
+	query.Add("expires_at_ms", strconv.FormatInt(expiresAt.UnixMilli(), decimalBase))
 
 	redirectURL := url.URL{
 		Path: "/app/auth/success",

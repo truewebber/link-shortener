@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:link_shortener/models/auth/oauth_provider.dart';
 import 'package:link_shortener/models/auth/user.dart';
+import 'package:link_shortener/models/auth/user_session.dart';
 import 'package:link_shortener/services/auth_service.dart';
 
 
@@ -48,7 +49,6 @@ class MockAuthService implements AuthService {
   }
   
   /// Mock implementation of handleOAuthCallback
-  @override
   Future<UserSession> handleOAuthCallback(String code, String provider) async {
     final providerEnum = _getOAuthProviderFromString(provider);
     
@@ -95,7 +95,7 @@ class MockAuthService implements AuthService {
   /// Mock implementation of refreshToken
   @override
   Future<bool> refreshToken() async {
-    if (_currentSession == null || _currentSession!.refreshToken == null) {
+    if (_currentSession == null || _currentSession!.refreshToken == '') {
       return false;
     }
     
@@ -129,9 +129,9 @@ class MockAuthService implements AuthService {
   // Helper method for mocking persistence
   Future<void> _persistSession(UserSession session) async {
     _storage[_tokenKey] = session.token;
-    _storage[_refreshTokenKey] = session.refreshToken ?? '';
+    _storage[_refreshTokenKey] = session.refreshToken;
     _storage[_tokenExpiryKey] = session.expiresAt.millisecondsSinceEpoch.toString();
-    _storage[_userDataKey] = jsonEncode(session.user.toJson());
+    _storage[_userDataKey] = jsonEncode(session.user!.toJson());
   }
   
   // Helper method for loading persisted session
@@ -193,5 +193,11 @@ class MockAuthService implements AuthService {
   @override
   void dispose() {
     _authStateController.close();
+  }
+
+  @override
+  Future<void> saveSession(UserSession session) {
+    // TODO: implement saveSession
+    throw UnimplementedError();
   }
 }

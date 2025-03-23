@@ -1,11 +1,13 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:link_shortener/config/app_config.dart';
 import 'package:link_shortener/config/app_config_provider.dart';
-import 'package:link_shortener/models/auth/user.dart';
+import 'package:link_shortener/models/auth/user_session.dart';
+import 'package:link_shortener/screens/auth_fail_screen.dart';
+import 'package:link_shortener/screens/auth_success_screen.dart';
 import 'package:link_shortener/screens/home_screen.dart';
-import 'package:link_shortener/screens/oauth_callback_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
 import 'package:link_shortener/services/url_service.dart';
 import 'package:universal_html/html.dart' as html;
@@ -116,32 +118,18 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
     // Get current URL
     final uri = Uri.parse(html.window.location.href);
     
-    // Check if this is an OAuth callback
-    if (uri.pathSegments.isNotEmpty && uri.pathSegments.first == 'auth') {
-      if (uri.pathSegments.length >= 3 && uri.pathSegments[1] == 'callback') {
-        // Get provider and code
-        final provider = uri.pathSegments[2];
-        final code = uri.queryParameters['code'] ?? '';
-        
-        if (kDebugMode) {
-          print('Detected OAuth callback for provider: $provider');
-        }
-        
-        // Clear the URL to avoid processing the callback again on refresh
-        html.window.history.pushState({}, '', '/');
-        
-        // Handle callback after the app is built
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => OAuthCallbackScreen(
-                code: code,
-                provider: provider,
-              ),
-            ),
-          );
-        });
+    // Check if this is an OAuth success callback with tokens
+    if (uri.pathSegments.length >= 3 && 
+        uri.pathSegments[0] == 'app' && 
+        uri.pathSegments[1] == 'auth') {
+      
+      final authResult = uri.pathSegments[2];
+      
+      if (kDebugMode) {
+        print('Detected auth result: $authResult');
       }
+      
+      // Не меняем URL, потому что это уже обрабатывается через routes
     }
   }
   
@@ -170,19 +158,32 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
           useMaterial3: true,
         ),
         routes: {
-          // Don't include '/' route since we're using 'home'
-          '/auth/callback/google': (context) => const OAuthCallbackScreen(
-            code: '',
-            provider: 'google',
-          ),
-          '/auth/callback/github': (context) => const OAuthCallbackScreen(
-            code: '',
-            provider: 'github',
-          ),
-          '/auth/callback/apple': (context) => const OAuthCallbackScreen(
-            code: '',
-            provider: 'apple',
-          ),
+          // Обработка успешной аутентификации
+          '/app/auth/success': (context) {
+            final uri = Uri.parse(html.window.location.href);
+            final accessToken = uri.queryParameters['access_token'] ?? '';
+            final refreshToken = uri.queryParameters['refresh_token'] ?? '';
+            final expiresAt = int.tryParse(uri.queryParameters['expires_at'] ?? '0') ?? 0;
+            
+            // Очищаем URL
+            html.window.history.pushState({}, '', '/');
+            
+            return AuthSuccessScreen(
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+              expiresAt: expiresAt,
+            );
+          },
+          // Обработка ошибки аутентификации
+          '/app/auth/fail': (context) {
+            final uri = Uri.parse(html.window.location.href);
+            final error = uri.queryParameters['error'] ?? 'Unknown error';
+            
+            // Очищаем URL
+            html.window.history.pushState({}, '', '/');
+            
+            return AuthFailScreen(error: error);
+          },
         },
         // We use home as the default route
         home: HomeScreen(
@@ -190,29 +191,7 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
           urlService: widget.urlService,
         ),
         // Handle dynamic routes for OAuth callbacks
-        onGenerateRoute: (settings) {
-          // Parse the route
-          final uri = Uri.parse(settings.name ?? '/');
-          
-          // Check if this is an OAuth callback route
-          if (uri.pathSegments.length >= 3 && 
-              uri.pathSegments[0] == 'auth' && 
-              uri.pathSegments[1] == 'callback') {
-            
-            final provider = uri.pathSegments[2];
-            final code = uri.queryParameters['code'] ?? '';
-            
-            return MaterialPageRoute(
-              builder: (context) => OAuthCallbackScreen(
-                code: code,
-                provider: provider,
-              ),
-            );
-          }
-          
-          // Return null to let the MaterialApp handle the route
-          return null;
-        },
+        onGenerateRoute: (settings) => null,
       ),
     );
   }

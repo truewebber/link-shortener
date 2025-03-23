@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:link_shortener/models/auth/user.dart';
+import 'package:link_shortener/models/auth/user_session.dart';
 import 'package:link_shortener/screens/auth_screen.dart';
 import 'package:link_shortener/screens/profile_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (kDebugMode) {
         if (_authService.currentSession != null) {
           print('Авторизация успешна:');
-          print('Пользователь: ${_authService.currentSession!.user.name} (${_authService.currentSession!.user.email})');
+          print('Пользователь: ${_authService.currentSession!.user!.name} (${_authService.currentSession!.user!.email})');
           print('Срок действия токена: ${_authService.currentSession!.expiresAt}');
         } else {
           print('Пользователь не авторизован');
@@ -160,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome back, ${_userSession!.user.name}!',
+                  'Welcome back, ${_userSession!.user!.name}!',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

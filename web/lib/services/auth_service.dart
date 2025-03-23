@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:link_shortener/config/app_config.dart';
 import 'package:link_shortener/models/auth/oauth_provider.dart';
 import 'package:link_shortener/models/auth/user.dart';
+import 'package:link_shortener/models/auth/user_session.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:url_launcher/url_launcher.dart';
@@ -71,6 +72,23 @@ class AuthService {
     }
   }
 
+  // Save user session
+  Future<void> saveSession(UserSession session) async {
+    await initLocalStorage();
+    
+    // Save to storage
+    await _persistSession(session);
+    
+    // Update current session
+    _currentSession = session;
+    _authStateController.add(session);
+    
+    if (kDebugMode) {
+      print('Session saved successfully');
+      print('Token expires at: ${session.expiresAt}');
+    }
+  }
+
   // Start OAuth flow for a provider
   Future<void> signInWithOAuth(OAuthProvider provider) async {
     String providerName;
@@ -92,52 +110,21 @@ class AuthService {
     final url = '$baseUrl/api/auth/$providerName';
 
     if (kIsWeb) {
-      // For web, we need to use window.open to handle the redirect
-      html.window.open(url, '_self');
+      // Для веб просто перенаправляем на страницу OAuth
+      html.window.location.href = url;
     } else {
-      // For mobile, use url_launcher
+      // Для мобильных устройств используем url_launcher
       if (await canLaunchUrl(Uri.parse(url))) {
-        await launchUrl(Uri.parse(url), mode: LaunchMode.inAppWebView);
+        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
       } else {
         throw Exception('Could not launch $url');
       }
     }
   }
 
-  // Handle OAuth callback - called after redirect
-  Future<UserSession> handleOAuthCallback(String code, String provider) async {
-    final url = '${_config.apiBaseUrl}/api/auth/$provider/callback';
-
-    try {
-      final response = await _client.get(Uri.parse('$url?code=$code'),
-          headers: {'Content-Type': 'application/json'});
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final session = _createSessionFromResponse(data);
-
-        // Save session data
-        await _persistSession(session);
-
-        // Update current session
-        _currentSession = session;
-        _authStateController.add(session);
-
-        return session;
-      } else {
-        throw Exception('Authentication failed: ${response.statusCode}');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error during OAuth callback: $e');
-      }
-      throw Exception('Authentication failed: $e');
-    }
-  }
-
   // Refresh the token
   Future<bool> refreshToken() async {
-    if (_currentSession == null || _currentSession!.refreshToken == null) {
+    if (_currentSession == null || _currentSession!.refreshToken == '') {
       if (kDebugMode) {
         print(
             '⚠️ Невозможно обновить токен: нет текущей сессии или refreshToken');
@@ -264,39 +251,45 @@ class AuthService {
 
   // Create session from API response
   UserSession _createSessionFromResponse(Map<String, dynamic> data) {
-    final user = User.fromJson(data['user']);
+    final user = data.containsKey('user') ? User.fromJson(data['user']) : null;
     final token = data['access_token'] as String;
     final refreshToken = data['refresh_token'] as String;
 
     // Calculate expiry time from server data or default to 1 hour
     DateTime expiryTime;
-    if (data.containsKey('expires_at') && data['expires_at'] != null) {
+    if (data.containsKey('access_token_expiry_ms') && data['access_token_expiry_ms'] != null) {
       try {
-        // Try to parse the expiry time from server response
-        expiryTime = DateTime.parse(data['expires_at'] as String);
+        final expiryMs = data['access_token_expiry_ms'] as int;
+        expiryTime = DateTime.fromMillisecondsSinceEpoch(expiryMs);
         if (kDebugMode) {
-          print('Использую срок действия токена от сервера: $expiryTime');
+          print('Использую срок действия токена из access_token_expiry_ms: $expiryTime');
         }
       } catch (e) {
-        // If parsing fails, use default expiry time
         expiryTime = DateTime.now().add(const Duration(hours: 1));
         if (kDebugMode) {
-          print('Не удалось распарсить срок действия токена от сервера: $e');
+          print('Не удалось использовать access_token_expiry_ms: $e');
           print('Использую срок действия по умолчанию: $expiryTime');
         }
       }
-    } else if (data.containsKey('expires_in') && data['expires_in'] != null) {
-      // Some OAuth servers provide expires_in in seconds
+    } else if (data.containsKey('expires_at') && data['expires_at'] != null) {
       try {
-        final expiresIn = int.parse(data['expires_in'].toString());
-        expiryTime = DateTime.now().add(Duration(seconds: expiresIn));
+        // Check if expires_at is a string (ISO format) or timestamp in seconds
+        final expiresAt = data['expires_at'];
+        if (expiresAt is String) {
+          expiryTime = DateTime.parse(expiresAt);
+        } else if (expiresAt is int) {
+          expiryTime = DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000);
+        } else {
+          throw Exception('Unexpected expires_at format: $expiresAt');
+        }
+        
         if (kDebugMode) {
-          print('Использую срок действия токена из expires_in: $expiryTime');
+          print('Использую срок действия токена из expires_at: $expiryTime');
         }
       } catch (e) {
         expiryTime = DateTime.now().add(const Duration(hours: 1));
         if (kDebugMode) {
-          print('Не удалось использовать expires_in: $e');
+          print('Не удалось распарсить срок действия токена из expires_at: $e');
           print('Использую срок действия по умолчанию: $expiryTime');
         }
       }
@@ -415,13 +408,17 @@ class AuthService {
     await initLocalStorage();
 
     await _storage.setItem(_tokenKey, session.token);
-    await _storage.setItem(_refreshTokenKey, session.refreshToken ?? '');
+    await _storage.setItem(_refreshTokenKey, session.refreshToken);
     await _storage.setItem(
         _tokenExpiryKey, session.expiresAt.millisecondsSinceEpoch.toString());
-    await _storage.setItem(_userDataKey, jsonEncode(session.user.toJson()));
-
+    
+    if (session.user != null) {
+      await _storage.setItem(_userDataKey, jsonEncode(session.user!.toJson()));
+    }
+    
     if (kDebugMode) {
       print('Session persisted to localStorage');
+      print('Token expires at: ${session.expiresAt}');
     }
   }
 
@@ -471,8 +468,8 @@ class AuthService {
       print(
           'Статус авторизации после проверки: ${isAuthenticated ? "авторизован" : "не авторизован"}');
       if (isAuthenticated) {
-        print('Пользователь: ${currentSession!.user.name}');
-        print('Email: ${currentSession!.user.email}');
+        print('Пользователь: ${currentSession!.user?.name ?? "неизвестно"}');
+        print('Email: ${currentSession!.user?.email ?? "неизвестно"}');
         print('Срок действия: ${currentSession!.expiresAt}');
       }
     }

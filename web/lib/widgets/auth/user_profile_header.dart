@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:link_shortener/models/auth/user.dart';
+import 'package:link_shortener/models/auth/user_session.dart';
 import 'package:link_shortener/screens/profile_screen.dart';
 import 'package:link_shortener/screens/url_management_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
@@ -103,9 +103,9 @@ class UserProfileHeader extends StatelessWidget {
 
   Widget _buildAvatar(BuildContext context) {
     final user = userSession.user;
-    
+
     // Check if the user has an avatar URL
-    if (user.avatarUrl != null && user.avatarUrl!.isNotEmpty) {
+    if (user != null && user.avatarUrl!.isNotEmpty) {
       return CircleAvatar(
         radius: 16,
         backgroundImage: NetworkImage(user.avatarUrl!),
@@ -129,14 +129,14 @@ class UserProfileHeader extends StatelessWidget {
     }
   }
 
-  String _getUserName() => userSession.user.name;
+  String _getUserName() => userSession.user!.name;
 
   String _getUserInitials() {
-    final name = userSession.user.name;
+    final name = userSession.user!.name;
     
     if (name.isEmpty) {
       // If no name, use first letter of email
-      return userSession.user.email.substring(0, 1).toUpperCase();
+      return userSession.user!.email.substring(0, 1).toUpperCase();
     }
     
     // Get initials from name
