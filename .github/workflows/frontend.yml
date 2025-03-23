@@ -50,7 +50,7 @@ jobs:
       - name: Run tests
         run: |
           cd web
-          flutter test
+          flutter test --platform=chrome
 
   build:
     name: Build and Push Docker Images
