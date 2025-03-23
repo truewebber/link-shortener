@@ -19,11 +19,6 @@ jobs:
           channel: 'master'
           cache: true
 
-      - uses: browser-actions/setup-chrome@v1
-        with:
-#          install-dependencies: true
-          install-chromedriver: true
-
       - name: Install dependencies
         run: |
           cd web
@@ -36,7 +31,7 @@ jobs:
 
   test:
     name: Flutter Test
-    runs-on: self-hosted
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -46,6 +41,11 @@ jobs:
           flutter-version: '3.27.0'
           channel: 'master'
           cache: true
+
+      - uses: browser-actions/setup-chrome@v1
+        with:
+          install-dependencies: true
+          install-chromedriver: true
 
       - name: Install dependencies
         run: |
