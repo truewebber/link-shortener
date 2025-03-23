@@ -21,7 +21,7 @@ jobs:
 
       - uses: browser-actions/setup-chrome@v1
         with:
-          install-dependencies: true
+#          install-dependencies: true
           install-chromedriver: true
 
       - name: Install dependencies
