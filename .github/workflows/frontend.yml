@@ -19,6 +19,11 @@ jobs:
           channel: 'master'
           cache: true
 
+      - uses: browser-actions/setup-chrome@v1
+        with:
+          install-dependencies: true
+          install-chromedriver: true
+
       - name: Install dependencies
         run: |
           cd web
