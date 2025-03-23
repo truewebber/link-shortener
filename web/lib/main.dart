@@ -163,7 +163,7 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
             final uri = Uri.parse(html.window.location.href);
             final accessToken = uri.queryParameters['access_token'] ?? '';
             final refreshToken = uri.queryParameters['refresh_token'] ?? '';
-            final expiresAt = int.tryParse(uri.queryParameters['expires_at'] ?? '0') ?? 0;
+            final expiresAtMS = int.tryParse(uri.queryParameters['expires_at_ms'] ?? '0') ?? 0;
             
             // Очищаем URL
             html.window.history.pushState({}, '', '/');
@@ -171,7 +171,7 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
             return AuthSuccessScreen(
               accessToken: accessToken,
               refreshToken: refreshToken,
-              expiresAt: expiresAt,
+              expiresAtMS: expiresAtMS,
             );
           },
           // Обработка ошибки аутентификации

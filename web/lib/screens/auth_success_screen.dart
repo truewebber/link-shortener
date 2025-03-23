@@ -10,7 +10,7 @@ class AuthSuccessScreen extends StatefulWidget {
     super.key,
     required this.accessToken,
     required this.refreshToken,
-    required this.expiresAt,
+    required this.expiresAtMS,
   });
 
   /// The access token from OAuth provider
@@ -19,8 +19,8 @@ class AuthSuccessScreen extends StatefulWidget {
   /// The refresh token from OAuth provider
   final String refreshToken;
   
-  /// Token expiration timestamp (UTC seconds)
-  final int expiresAt;
+  /// Token expiration timestamp (UTC milliseconds)
+  final int expiresAtMS;
 
   @override
   State<AuthSuccessScreen> createState() => _AuthSuccessScreenState();
@@ -39,14 +39,15 @@ class _AuthSuccessScreenState extends State<AuthSuccessScreen> {
   
   Future<void> _processAuth() async {
     try {
+      // Create a session from received parameters
+      final expiresAt = DateTime.fromMillisecondsSinceEpoch(widget.expiresAtMS);
+
       if (kDebugMode) {
         print('Processing successful authentication');
         print('Access Token: ${widget.accessToken.substring(0, 10)}...');
-        print('Expires at: ${DateTime.fromMillisecondsSinceEpoch(widget.expiresAt * 1000).toIso8601String()} (UTC)');
+        print('Expires at: ${expiresAt.toIso8601String()} (UTC)');
       }
-      
-      // Create a session from received parameters
-      final expiresAt = DateTime.fromMillisecondsSinceEpoch(widget.expiresAt * 1000);
+
       final session = UserSession(
         token: widget.accessToken,
         refreshToken: widget.refreshToken,

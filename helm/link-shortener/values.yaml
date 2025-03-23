@@ -8,7 +8,7 @@ frontend:
   replicaCount: 1
   port: 3000
   environment: "production"
-  backendApiUrl: "/"
+  backendApiUrl: "https://short.twb.one"
 
 nginx:
   replicas: 1
