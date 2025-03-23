@@ -7,7 +7,12 @@ import 'package:link_shortener/widgets/auth/auth_status_indicator.dart';
 import 'package:link_shortener/widgets/auth/oauth_provider_button.dart';
 
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({super.key});
+  const AuthScreen({
+    super.key,
+    this.authService,
+  });
+
+  final AuthService? authService;
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -16,7 +21,22 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   AuthenticationStatus _status = AuthenticationStatus.initial;
   String? _errorMessage;
-  final _authService = AuthService();
+  late final AuthService _authService;
+  
+  @override
+  void initState() {
+    super.initState();
+    _authService = widget.authService ?? AuthService();
+  }
+  
+  @override
+  void dispose() {
+    // Освобождаем ресурсы только если мы создали сервис в этом классе
+    if (widget.authService == null) {
+      _authService.dispose();
+    }
+    super.dispose();
+  }
   
   @override
   Widget build(BuildContext context) {

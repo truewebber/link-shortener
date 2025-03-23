@@ -16,6 +16,11 @@ void main() {
     testAuthService = MockAuthService();
   });
   
+  tearDown(() {
+    // Убедимся, что ресурсы очищены после каждого теста
+    testAuthService.dispose();
+  });
+  
   group('HomeScreen', () {
     testWidgets('displays all main components', (tester) async {
       await tester.pumpWidget(
@@ -26,10 +31,16 @@ void main() {
         ),
       );
       
+      // Дождемся завершения всех анимаций
+      await tester.pumpAndSettle();
+      
       // Check for main components
       expect(find.text('Link Shortener'), findsOneWidget);
       expect(find.byType(UrlShortenerForm), findsOneWidget);
       expect(find.byType(FeatureSection), findsOneWidget);
+      
+      // Дождемся завершения всех таймеров перед выходом
+      await tester.pumpAndSettle(const Duration(seconds: 1));
     });
     
     testWidgets('adapts to different screen sizes', (tester) async {
@@ -41,20 +52,24 @@ void main() {
         ),
       );
       
+      await tester.pumpAndSettle();
+      
       // Test desktop layout (>900px)
       await tester.binding.setSurfaceSize(const Size(1000, 800));
-      await tester.pump();
+      await tester.pumpAndSettle();
       
       // Test tablet layout (600-900px)
       await tester.binding.setSurfaceSize(const Size(800, 600));
-      await tester.pump();
+      await tester.pumpAndSettle();
       
       // Test mobile layout (<600px)
       await tester.binding.setSurfaceSize(const Size(400, 800));
-      await tester.pump();
+      await tester.pumpAndSettle();
       
       // Just check that the screen adapts without errors
       expect(find.byType(UrlShortenerForm), findsOneWidget);
+      
+      await tester.pumpAndSettle(const Duration(seconds: 1));
     });
     
     testWidgets('maintains consistent spacing', (tester) async {
@@ -66,10 +81,14 @@ void main() {
         ),
       );
       
+      await tester.pumpAndSettle();
+      
       // Check that key components exist
       expect(find.text('Shorten Your Links'), findsOneWidget);
       expect(find.byType(UrlShortenerForm), findsOneWidget);
       expect(find.byType(FeatureSection), findsOneWidget);
+      
+      await tester.pumpAndSettle(const Duration(seconds: 1));
     });
     
     testWidgets('displays correct heading text', (tester) async {
@@ -81,6 +100,8 @@ void main() {
         ),
       );
       
+      await tester.pumpAndSettle();
+      
       expect(
         find.text('Shorten Your Links'),
         findsOneWidget,
@@ -89,6 +110,8 @@ void main() {
         find.text('Create short, memorable links that redirect to your long URLs. Share them easily on social media, emails, or messages.'),
         findsOneWidget,
       );
+      
+      await tester.pumpAndSettle(const Duration(seconds: 1));
     });
     
     testWidgets('maintains responsive padding', (tester) async {
@@ -100,14 +123,18 @@ void main() {
         ),
       );
       
+      await tester.pumpAndSettle();
+      
       // Just verify the screen builds without errors at different sizes
       await tester.binding.setSurfaceSize(const Size(1000, 800));
-      await tester.pump();
+      await tester.pumpAndSettle();
       
       await tester.binding.setSurfaceSize(const Size(400, 800));
-      await tester.pump();
+      await tester.pumpAndSettle();
       
       expect(find.byType(HomeScreen), findsOneWidget);
+      
+      await tester.pumpAndSettle(const Duration(seconds: 1));
     });
     
     testWidgets('handles theme changes correctly', (tester) async {
@@ -119,17 +146,21 @@ void main() {
         ),
       );
       
+      await tester.pumpAndSettle();
+      
       // Verify initial theme
       final initialTheme = Theme.of(tester.element(find.byType(HomeScreen)));
       expect(initialTheme.brightness, Brightness.light);
       
       // Change to dark theme
       await tester.binding.setSurfaceSize(const Size(1000, 800));
-      await tester.pump();
+      await tester.pumpAndSettle();
       
       // Verify theme consistency
       final finalTheme = Theme.of(tester.element(find.byType(HomeScreen)));
       expect(finalTheme.brightness, Brightness.light);
+      
+      await tester.pumpAndSettle(const Duration(seconds: 1));
     });
     
     testWidgets('maintains scroll behavior', (tester) async {
@@ -141,13 +172,17 @@ void main() {
         ),
       );
       
+      await tester.pumpAndSettle();
+      
       // Test scrolling
       await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -100));
-      await tester.pump();
+      await tester.pumpAndSettle();
       
       // Verify scroll position
       final scrollController = PrimaryScrollController.of(tester.element(find.byType(SingleChildScrollView)));
       expect(scrollController.position.pixels, greaterThan(0));
+      
+      await tester.pumpAndSettle(const Duration(seconds: 1));
     });
   });
 }

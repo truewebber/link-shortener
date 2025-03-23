@@ -1,24 +1,81 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:link_shortener/models/auth/user.dart';
 import 'package:link_shortener/screens/auth_screen.dart';
+import 'package:link_shortener/screens/profile_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
+import 'package:link_shortener/services/url_service.dart';
 import 'package:link_shortener/widgets/auth/user_profile_header.dart';
 import 'package:link_shortener/widgets/feature_section.dart';
 import 'package:link_shortener/widgets/url_shortener_form.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
-    this.userSession,
+    this.authService,
+    this.urlService,
   });
 
-  final UserSession? userSession;
+  final AuthService? authService;
+  final UrlService? urlService;
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late final AuthService _authService;
+  late final UrlService _urlService;
+  UserSession? _userSession;
+  late StreamSubscription<UserSession?> _authSubscription;
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    // Use the provided auth service or get the singleton instance
+    _authService = widget.authService ?? AuthService();
+    // Use the provided url service or get the singleton instance
+    _urlService = widget.urlService ?? UrlService();
+    
+    // Initialize session state
+    _userSession = _authService.currentSession;
+    
+    // Listen for auth state changes
+    _authSubscription = _authService.authStateChanges.listen((session) {
+      if (mounted) {
+        setState(() {
+          _userSession = session;
+        });
+      }
+    });
+    
+    // Initialize authentication service
+    _authService.initialize().then((_) {
+      if (kDebugMode) {
+        if (_authService.currentSession != null) {
+          print('Авторизация успешна:');
+          print('Пользователь: ${_authService.currentSession!.user.name} (${_authService.currentSession!.user.email})');
+          print('Срок действия токена: ${_authService.currentSession!.expiresAt}');
+        } else {
+          print('Пользователь не авторизован');
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // Отписываемся от потока аутентификации
+    _authSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
-      print('Building HomeScreen. Authenticated: ${userSession != null}');
+      print('Building HomeScreen. Authenticated: ${_userSession != null}');
     }
     
     return Scaffold(
@@ -28,26 +85,22 @@ class HomeScreen extends StatelessWidget {
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         actions: [
           // Show different UI based on authentication state
-          if (userSession != null)
+          if (_userSession != null)
             UserProfileHeader(
-              user: userSession!.user,
-              onSignOut: () => _handleSignOut(context),
+              userSession: _userSession!,
             )
           else
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const AuthScreen(),
-                  ),
-                );
-              },
-              child: Text(
-                'Login',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  fontWeight: FontWeight.bold,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: ElevatedButton(
+                onPressed: _navigateToAuth,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
+                child: const Text('Sign In'),
               ),
             ),
         ],
@@ -57,9 +110,24 @@ class HomeScreen extends StatelessWidget {
           children: [
             _buildHeroSection(context),
             const SizedBox(height: 48),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              child: UrlShortenerForm(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  // Different UI based on authentication
+                  if (_userSession != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: _buildAuthenticatedBanner(context),
+                    ),
+                  
+                  UrlShortenerForm(
+                    // Pass user session to show different options for authenticated users
+                    isAuthenticated: _userSession != null,
+                    urlService: _urlService,
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 64),
             const FeatureSection(),
@@ -70,6 +138,54 @@ class HomeScreen extends StatelessWidget {
       bottomNavigationBar: _buildRobustFooter(context),
     );
   }
+  
+  Widget _buildAuthenticatedBanner(BuildContext context) => Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer.withAlpha(77),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.primary.withAlpha(51),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.verified_user,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome back, ${_userSession!.user.name}!',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'You now have access to additional features including custom expiration times and link management.',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ProfileScreen(),
+                ),
+              );
+            },
+            child: const Text('Profile'),
+          ),
+        ],
+      ),
+    );
   
   Widget _buildHeroSection(BuildContext context) => Container(
       width: double.infinity,
@@ -104,13 +220,30 @@ class HomeScreen extends StatelessWidget {
               SizedBox(
                 width: isDesktop ? 600 : (isTablet ? 450 : double.infinity),
                 child: Text(
-                  'Create short, memorable links that redirect to your long URLs. Share them easily on social media, emails, or messages.',
+                  _userSession != null
+                      ? 'Create short, memorable links with full control over expiration and tracking features.'
+                      : 'Create short, memorable links that redirect to your long URLs. Share them easily on social media, emails, or messages.',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Colors.white.withAlpha(230),
                   ),
                   textAlign: TextAlign.center,
                 ),
               ),
+              if (_userSession == null) ...[
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _navigateToAuth,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  child: const Text('Sign In for More Features'),
+                ),
+              ],
             ],
           );
         },
@@ -154,38 +287,10 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   
-  Future<void> _handleSignOut(BuildContext context) async {
-    // Show confirmation dialog
-    final shouldSignOut = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Sign Out'),
-          ),
-        ],
-      ),
+  /// Navigate to the auth screen
+  void _navigateToAuth() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const AuthScreen()),
     );
-    
-    if (shouldSignOut == true) {
-      // Sign out using AuthService
-      await AuthService().signOut();
-      
-      // Show confirmation message
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('You have been signed out'),
-          ),
-        );
-      }
-    }
   }
 }

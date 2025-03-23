@@ -1,115 +1,164 @@
 import 'package:flutter/material.dart';
 import 'package:link_shortener/models/auth/user.dart';
+import 'package:link_shortener/screens/profile_screen.dart';
+import 'package:link_shortener/screens/url_management_screen.dart';
+import 'package:link_shortener/services/auth_service.dart';
 
+/// A widget that displays the user's profile in the app header
 class UserProfileHeader extends StatelessWidget {
+  /// Creates a user profile header
   const UserProfileHeader({
     super.key,
-    required this.user,
-    required this.onSignOut,
+    required this.userSession,
   });
 
-  final User user;
-  final VoidCallback onSignOut;
+  /// The current user session
+  final UserSession userSession;
 
   @override
   Widget build(BuildContext context) => PopupMenuButton<String>(
-      offset: const Offset(0, 40),
-      onSelected: (value) {
-        if (value == 'sign_out') {
-          onSignOut();
-        }
-      },
-      itemBuilder: (context) => [
-        const PopupMenuItem<String>(
-          value: 'profile',
-          enabled: false, // Will be enabled in Sprint 3
-          child: Row(
-            children: [
-              Icon(Icons.person),
-              SizedBox(width: 8),
-              Text('My Profile'),
-            ],
-          ),
-        ),
-        const PopupMenuItem<String>(
-          value: 'links',
-          enabled: false, // Will be enabled in Sprint 3
-          child: Row(
-            children: [
-              Icon(Icons.link),
-              SizedBox(width: 8),
-              Text('My Links'),
-            ],
-          ),
-        ),
-        const PopupMenuDivider(),
-        const PopupMenuItem<String>(
-          value: 'sign_out',
-          child: Row(
-            children: [
-              Icon(Icons.logout),
-              SizedBox(width: 8),
-              Text('Sign Out'),
-            ],
-          ),
-        ),
-      ],
+      offset: const Offset(0, 48),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
-            _buildAvatar(),
+            _buildAvatar(context),
             const SizedBox(width: 8),
             Text(
-              user.name,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary,
-                fontWeight: FontWeight.bold,
-              ),
+              _getUserName(),
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.arrow_drop_down,
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
+            const Icon(Icons.arrow_drop_down),
           ],
         ),
       ),
+      itemBuilder: (context) => [
+        PopupMenuItem<String>(
+          value: 'profile',
+          child: Row(
+            children: [
+              Icon(
+                Icons.person,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              const Text('Profile'),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'urls',
+          child: Row(
+            children: [
+              Icon(
+                Icons.link,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              const Text('My URLs'),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(
+          value: 'signout',
+          child: Row(
+            children: [
+              Icon(
+                Icons.logout,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(width: 8),
+              const Text('Sign Out'),
+            ],
+          ),
+        ),
+      ],
+      onSelected: (value) {
+        switch (value) {
+          case 'profile':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ProfileScreen(),
+              ),
+            );
+            break;
+          case 'urls':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const UrlManagementScreen(),
+              ),
+            );
+            break;
+          case 'signout':
+            _signOut(context);
+            break;
+        }
+      },
     );
 
-  Widget _buildAvatar() {
+  Widget _buildAvatar(BuildContext context) {
+    final user = userSession.user;
+    
+    // Check if the user has an avatar URL
     if (user.avatarUrl != null && user.avatarUrl!.isNotEmpty) {
       return CircleAvatar(
         radius: 16,
         backgroundImage: NetworkImage(user.avatarUrl!),
       );
     } else {
-      // Fallback to initials avatar
+      // If no avatar, use initials
+      final initials = _getUserInitials();
+      
       return CircleAvatar(
         radius: 16,
-        backgroundColor: Colors.grey[300],
+        backgroundColor: Theme.of(context).colorScheme.primary,
         child: Text(
-          _getInitials(user.name),
-          style: const TextStyle(
-            color: Colors.black87,
+          initials,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimary,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
-            fontSize: 12,
           ),
         ),
       );
     }
   }
 
-  String _getInitials(String name) {
-    if (name.isEmpty) return '';
+  String _getUserName() => userSession.user.name;
+
+  String _getUserInitials() {
+    final name = userSession.user.name;
     
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return '${parts.first[0]}${parts.last[0]}';
-    } else if (parts.length == 1 && parts.first.isNotEmpty) {
-      return parts.first[0];
+    if (name.isEmpty) {
+      // If no name, use first letter of email
+      return userSession.user.email.substring(0, 1).toUpperCase();
     }
     
-    return '';
+    // Get initials from name
+    final parts = name.split(' ');
+    if (parts.length == 1) {
+      return parts.first.substring(0, 1).toUpperCase();
+    } else {
+      return (parts.first.substring(0, 1) + parts.last.substring(0, 1)).toUpperCase();
+    }
+  }
+
+  Future<void> _signOut(BuildContext context) async {
+    final authService = AuthService();
+    await authService.signOut();
+    
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You have been signed out.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }

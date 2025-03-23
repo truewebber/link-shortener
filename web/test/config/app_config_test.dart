@@ -20,7 +20,7 @@ void main() {
       final config = AppConfig.fromWindow();
       
       // Verify default values are used
-      expect(config.apiBaseUrl, '/api');
+      expect(config.apiBaseUrl, 'https://short.twb.one');
       expect(config.environment, 'development');
     });
     

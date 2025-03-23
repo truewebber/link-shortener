@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/main.dart';
 import 'package:link_shortener/screens/home_screen.dart';
+import 'package:link_shortener/services/auth_service.dart';
+import 'package:link_shortener/services/url_service.dart';
 
 import '../mocks/mock_auth_service.dart';
+import '../mocks/service_factory.dart';
 import '../test_helper.dart';
 
 void main() {
@@ -11,10 +14,20 @@ void main() {
 
   late TestAppConfig testConfig;
   late MockAuthService testAuthService;
+  late UrlService testUrlService;
 
   setUp(() {
     testConfig = TestAppConfig();
-    testAuthService = MockAuthService();
+    testServiceFactory.reset(); // Сбрасываем состояние сервисов
+    testAuthService = testServiceFactory.provideAuthService() as MockAuthService;
+    testUrlService = testServiceFactory.provideUrlService();
+  });
+  
+  tearDown(() {
+    // Ensure the AuthService is disposed to clean up timers
+    testUrlService.dispose();
+    testAuthService.dispose();
+    AuthService.resetForTesting();
   });
 
   group('URL Shortener End-to-End', () {
@@ -23,6 +36,7 @@ void main() {
         LinkShortenerApp(
           config: testConfig,
           authService: testAuthService,
+          urlService: testUrlService,
         ),
       );
 
@@ -34,7 +48,7 @@ void main() {
       
       // Verify anonymous user notice
       expect(
-        find.text('Note: Links created by anonymous users expire after 3 months.'),
+        find.text('Links created by anonymous users expire after 3 months.'),
         findsOneWidget,
       );
     });
@@ -44,6 +58,7 @@ void main() {
         LinkShortenerApp(
           config: testConfig,
           authService: testAuthService,
+          urlService: testUrlService,
         ),
       );
 
@@ -57,6 +72,7 @@ void main() {
         LinkShortenerApp(
           config: testConfig,
           authService: testAuthService,
+          urlService: testUrlService,
         ),
       );
 
@@ -76,6 +92,7 @@ void main() {
         LinkShortenerApp(
           config: testConfig,
           authService: testAuthService,
+          urlService: testUrlService,
         ),
       );
 

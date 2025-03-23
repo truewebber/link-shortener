@@ -3,16 +3,19 @@ import 'package:link_shortener/config/app_config.dart';
 /// Mock implementation of AppConfig for testing
 /// This avoids the need for the dart:js_interop library
 class MockAppConfig implements AppConfig {
-
   MockAppConfig({
-    this.apiBaseUrl = 'http://test-api.example.com',
+    this.apiBaseUrl = 'https://api.test.example.com',
     this.environment = 'test',
+    this.version = '1.0.0-test',
   });
+
+  factory MockAppConfig.fromWindow() => MockAppConfig();
+
   @override
   final String apiBaseUrl;
-  
   @override
   final String environment;
+  final String version;
   
   /// Flag to simulate API errors during testing
   bool simulateApiError = false;

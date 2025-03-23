@@ -14,6 +14,10 @@ void main() {
     testAuthService = MockAuthService();
   });
 
+  tearDown(() {
+    testAuthService.dispose();
+  });
+
   group('AuthScreen', () {
     testWidgets('displays all OAuth provider buttons', (tester) async {
       await tester.pumpWidget(
@@ -24,11 +28,17 @@ void main() {
         ),
       );
 
+      // Удостоверимся, что все виджеты построены
+      await tester.pumpAndSettle();
+
       // Check for provider buttons
       expect(find.byType(OAuthProviderButton), findsNWidgets(3));
       expect(find.text('Continue with Google'), findsOneWidget);
       expect(find.text('Continue with Apple'), findsOneWidget);
       expect(find.text('Continue with GitHub'), findsOneWidget);
+      
+      // Закроем все асинхронные операции перед завершением теста
+      await tester.pumpAndSettle(const Duration(seconds: 1));
     });
   });
 }

@@ -9,19 +9,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/main.dart';
 import 'package:link_shortener/screens/home_screen.dart';
+import 'package:link_shortener/services/auth_service.dart';
+import 'package:link_shortener/services/url_service.dart';
 import 'mocks/mock_app_config.dart';
-import 'mocks/mock_auth_service.dart';
+import 'mocks/service_factory.dart';
 
 void main() {
+  late MockAppConfig config;
+  late AuthService authService;
+  late UrlService urlService;
+  
+  setUp(() {
+    // Инициализация перед каждым тестом
+    config = MockAppConfig();
+    testServiceFactory.reset();
+    authService = testServiceFactory.provideAuthService();
+    urlService = testServiceFactory.provideUrlService();
+  });
+  
+  tearDown(() {
+    // Очистка после каждого теста
+    urlService.dispose();
+    authService.dispose();
+  });
+
   testWidgets('App loads with basic components', (tester) async {
-    // Create test configuration and auth service
-    final config = MockAppConfig();
-    final authService = MockAuthService();
-    
     // Build our app and trigger a frame
     await tester.pumpWidget(LinkShortenerApp(
       config: config,
       authService: authService,
+      urlService: urlService,
     ));
 
     // Verify that our app has loaded the HomeScreen

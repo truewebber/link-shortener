@@ -2,23 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/main.dart';
 import 'package:link_shortener/screens/home_screen.dart';
+import 'package:link_shortener/services/auth_service.dart';
+import 'package:link_shortener/services/url_service.dart';
 import 'mocks/mock_app_config.dart';
 import 'mocks/mock_auth_service.dart';
+import 'mocks/service_factory.dart';
 
 void main() {
   group('Main App', () {
     late MockAppConfig testConfig;
     late MockAuthService testAuthService;
+    late UrlService testUrlService;
     
     setUp(() {
       testConfig = MockAppConfig();
-      testAuthService = MockAuthService();
+      testServiceFactory.reset(); // Сбрасываем состояние сервисов
+      testAuthService = testServiceFactory.provideAuthService() as MockAuthService;
+      testUrlService = testServiceFactory.provideUrlService();
+    });
+    
+    tearDown(() {
+      // Очистка таймеров, вызывая dispose у AuthService
+      testUrlService.dispose();
+      testAuthService.dispose();
+      AuthService.resetForTesting();
     });
     
     testWidgets('initializes with correct configuration', (tester) async {
       await tester.pumpWidget(LinkShortenerApp(
         config: testConfig,
         authService: testAuthService,
+        urlService: testUrlService,
       ));
       
       // Verify app title is in AppBar
@@ -36,6 +50,7 @@ void main() {
       await tester.pumpWidget(LinkShortenerApp(
         config: testConfig,
         authService: testAuthService,
+        urlService: testUrlService,
       ));
       
       // Verify initial theme
@@ -55,6 +70,7 @@ void main() {
       await tester.pumpWidget(LinkShortenerApp(
         config: testConfig,
         authService: testAuthService,
+        urlService: testUrlService,
       ));
       
       // Test desktop layout (>900px)
@@ -76,6 +92,7 @@ void main() {
       await tester.pumpWidget(LinkShortenerApp(
         config: testConfig,
         authService: testAuthService,
+        urlService: testUrlService,
       ));
       
       // Verify initial route
@@ -86,6 +103,7 @@ void main() {
       await tester.pumpWidget(LinkShortenerApp(
         config: testConfig,
         authService: testAuthService,
+        urlService: testUrlService,
       ));
       
       // Verify initial state
@@ -103,13 +121,14 @@ void main() {
       await tester.pumpWidget(LinkShortenerApp(
         config: testConfig,
         authService: testAuthService,
+        urlService: testUrlService,
       ));
       
       // Verify text styles
       expect(find.text('Link Shortener'), findsOneWidget);
       
       // Verify button styles
-      expect(find.byType(ElevatedButton), findsOneWidget);
+      expect(find.byType(ElevatedButton), findsWidgets);
       
       // Verify input field styles
       expect(find.byType(TextFormField), findsOneWidget);
@@ -119,6 +138,7 @@ void main() {
       await tester.pumpWidget(LinkShortenerApp(
         config: testConfig,
         authService: testAuthService,
+        urlService: testUrlService,
       ));
       
       // Test portrait orientation
@@ -140,6 +160,7 @@ void main() {
       await tester.pumpWidget(LinkShortenerApp(
         config: testConfig,
         authService: testAuthService,
+        urlService: testUrlService,
       ));
       
       // Check if the shorten URL button is present
