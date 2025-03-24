@@ -31,7 +31,6 @@ class _AuthScreenState extends State<AuthScreen> {
   
   @override
   void dispose() {
-    // Освобождаем ресурсы только если мы создали сервис в этом классе
     if (widget.authService == null) {
       _authService.dispose();
     }
@@ -60,7 +59,6 @@ class _AuthScreenState extends State<AuthScreen> {
             padding: const EdgeInsets.all(24),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // Responsive design based on width
                 final maxWidth = constraints.maxWidth > 500 ? 500.0 : constraints.maxWidth;
                 
                 return Container(
@@ -96,7 +94,6 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                       const SizedBox(height: 32),
                       
-                      // Auth Status Indicator
                       if (_status != AuthenticationStatus.initial) ...[
                         AuthStatusIndicator(
                           status: _status,
@@ -106,7 +103,6 @@ class _AuthScreenState extends State<AuthScreen> {
                         const SizedBox(height: 24),
                       ],
                       
-                      // If authenticating, show progress and hide buttons
                       if (_status != AuthenticationStatus.authenticating) ...[
                         // OAuth Provider Buttons
                         Column(
@@ -150,28 +146,23 @@ class _AuthScreenState extends State<AuthScreen> {
   }
   
   Future<void> _handleOAuthSignIn(OAuthProvider provider) async {
-    // Update state to show loading
     setState(() {
       _status = AuthenticationStatus.authenticating;
       _errorMessage = null;
     });
     
     try {
-      // Call the auth service
-      await _authService.signInWithOAuth(provider);
+      await _authService.signInWithOAuth(provider, context: context);
       
-      // Update state to show success
       setState(() {
         _status = AuthenticationStatus.authenticated;
       });
       
-      // Delay to show success message and then navigate back
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
         Navigator.of(context).pop();
       }
     } catch (e) {
-      // Update state to show error
       setState(() {
         _status = AuthenticationStatus.error;
         _errorMessage = 'Failed to authenticate: ${e.toString()}';

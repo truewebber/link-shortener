@@ -1,39 +1,19 @@
 import 'package:flutter/material.dart';
 
-/// Configuration for app themes
-///
-/// Provides factory methods for creating light and dark themes
-/// with consistent styling across the application.
 class ThemeConfig {
-  /// Private constructor to prevent direct instantiation
   ThemeConfig._();
 
-  /// Primary brand color used throughout the app
   static const Color primaryColor = Color(0xFF2196F3);
   
-  /// Secondary/accent color used throughout the app
   static const Color secondaryColor = Color(0xFF03DAC6);
   
-  /// Light theme for the application
-  ///
-  /// Provides a consistent light theme with appropriate colors,
-  /// text styles, and component themes.
   static ThemeData get lightTheme => _createThemeData(brightness: Brightness.light);
 
-  /// Dark theme for the application
-  ///
-  /// Provides a consistent dark theme with appropriate colors,
-  /// text styles, and component themes.
   static ThemeData get darkTheme => _createThemeData(brightness: Brightness.dark);
 
-  /// Creates a theme data with specified brightness
-  ///
-  /// This internal method handles the creation of theme data
-  /// with consistent styles across light and dark themes.
   static ThemeData _createThemeData({required Brightness brightness}) {
     final isDark = brightness == Brightness.dark;
     
-    // Create different colors for dark and light themes
     final backgroundColor = isDark ? const Color(0xFF121212) : Colors.white;
     final Color errorColor;
     if (isDark) {
@@ -41,8 +21,7 @@ class ThemeConfig {
     } else {
       errorColor = const Color(0xFFB00020);
     }
-    
-    // Create color scheme
+
     final colorScheme = ColorScheme(
       brightness: brightness,
       primary: primaryColor,
@@ -55,7 +34,6 @@ class ThemeConfig {
       onSurface: isDark ? Colors.white : Colors.black,
     );
     
-    // Create text theme with consistent sizes across brightness modes
     final textTheme = TextTheme(
       headlineLarge: TextStyle(
         fontSize: 32,
@@ -86,7 +64,6 @@ class ThemeConfig {
       ),
     );
     
-    // Create consistent input decoration
     final inputDecorationTheme = InputDecorationTheme(
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
@@ -121,7 +98,6 @@ class ThemeConfig {
       fillColor: isDark ? Colors.grey.shade900 : Colors.grey.shade50,
     );
     
-    // Create consistent button style
     final elevatedButtonTheme = ElevatedButtonThemeData(
       style: ButtonStyle(
         padding: WidgetStateProperty.all(
@@ -135,7 +111,6 @@ class ThemeConfig {
       ),
     );
     
-    // Create consistent card theme
     final cardTheme = CardTheme(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -143,7 +118,6 @@ class ThemeConfig {
       ),
     );
     
-    // Create page transitions theme
     const pageTransitionsTheme = PageTransitionsTheme(
       builders: {
         TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
@@ -166,4 +140,4 @@ class ThemeConfig {
       pageTransitionsTheme: pageTransitionsTheme,
     );
   }
-} 
+}

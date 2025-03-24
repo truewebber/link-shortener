@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:link_shortener/models/auth/oauth_provider.dart';
 
 class User {
@@ -9,13 +10,30 @@ class User {
     required this.provider,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
-        id: json['id'] as int,
-        name: json['name'] as String,
-        email: json['email'] as String,
-        avatarUrl: json['avatar_url'] as String?,
-        provider: _providerFromString(json['provider'] as String),
+  factory User.fromJson(Map<String, dynamic> json) {
+    try {
+      final id = json['id'] is int ? json['id'] as int : int.parse(json['id'].toString());
+      return User(
+        id: id,
+        name: json['name']?.toString() ?? 'Unknown',
+        email: json['email']?.toString() ?? 'no-email@example.com',
+        avatarUrl: json['avatar_url']?.toString(),
+        provider: _providerFromString(json['provider']?.toString() ?? 'google'),
       );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error parsing User from JSON: $e');
+        print('JSON data: $json');
+      }
+
+      return const User(
+        id: -1,
+        name: 'Unknown User',
+        email: 'unknown@example.com',
+        provider: OAuthProvider.unknown,
+      );
+    }
+  }
 
   final int id;
   final String name;

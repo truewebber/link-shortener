@@ -1,6 +1,4 @@
-/// Represents a shortened URL in the system
 class ShortUrl {
-  /// Creates a new short URL object
   const ShortUrl({
     required this.originalUrl,
     required this.shortId,
@@ -12,7 +10,6 @@ class ShortUrl {
     this.userId,
   });
 
-  /// Creates a short URL from a JSON object
   factory ShortUrl.fromJson(Map<String, dynamic> json) => ShortUrl(
       originalUrl: json['originalUrl'] as String,
       shortId: json['shortId'] as String,
@@ -26,31 +23,22 @@ class ShortUrl {
       userId: json['userId'] as String?,
     );
 
-  /// The original long URL that was shortened
   final String originalUrl;
   
-  /// The shortened ID/path (the part after the domain)
   final String shortId;
   
-  /// Optional custom alias for the URL
   final String? customAlias;
   
-  /// The complete short URL (with domain)
   final String shortUrl;
   
-  /// When the URL will expire (null means never)
   final DateTime? expiresAt;
   
-  /// When the URL was created
   final DateTime createdAt;
   
-  /// Number of times the URL has been accessed
   final int clickCount;
   
-  /// The ID of the user who created this URL (if any)
   final String? userId;
 
-  /// Converts this object to a JSON map
   Map<String, dynamic> toJson() => {
       'originalUrl': originalUrl,
       'shortId': shortId,
@@ -62,7 +50,6 @@ class ShortUrl {
       if (userId != null) 'userId': userId,
     };
 
-  /// Copy constructor to create a new ShortUrl with modified properties
   ShortUrl copyWith({
     String? originalUrl,
     String? shortId,
@@ -113,13 +100,11 @@ class ShortUrl {
   @override
   String toString() => 'ShortUrl(shortId: $shortId, originalUrl: $originalUrl)';
   
-  /// Checks if the URL has expired
   bool get isExpired {
     if (expiresAt == null) return false;
     return DateTime.now().isAfter(expiresAt!);
   }
   
-  /// Calculates time until expiration
   Duration? get timeUntilExpiration {
     if (expiresAt == null) return null;
     final now = DateTime.now();

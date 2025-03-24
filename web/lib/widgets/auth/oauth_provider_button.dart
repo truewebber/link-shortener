@@ -21,11 +21,9 @@ class _OAuthProviderButtonState extends State<OAuthProviderButton> {
 
   @override
   Widget build(BuildContext context) {
-    // Convert hex color strings to Color objects
     final backgroundColor = _hexToColor(widget.provider.backgroundColor);
     final textColor = _hexToColor(widget.provider.textColor);
 
-    // Apply hover/press effects
     final buttonColor = _isPressed
         ? backgroundColor.withAlpha(204)
         : _isHovered
@@ -87,8 +85,6 @@ class _OAuthProviderButtonState extends State<OAuthProviderButton> {
   }
 
   Widget _buildProviderIcon() {
-    // Placeholder for icons
-    // In a real app, we would load actual provider icons
     final iconColor = _hexToColor(widget.provider.textColor);
 
     switch (widget.provider) {
@@ -98,10 +94,11 @@ class _OAuthProviderButtonState extends State<OAuthProviderButton> {
         return Icon(Icons.apple, color: iconColor, size: 24);
       case OAuthProvider.github:
         return Icon(Icons.code, color: iconColor, size: 24);
+      case OAuthProvider.unknown:
+        return Icon(Icons.question_mark, color: iconColor, size: 24);
     }
   }
 
-  // Helper method to convert hex string to Color
   Color _hexToColor(String hexString) {
     final hexCode = hexString.replaceAll('#', '');
     return Color(int.parse('FF$hexCode', radix: 16));

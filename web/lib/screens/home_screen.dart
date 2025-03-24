@@ -34,15 +34,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     
-    // Use the provided auth service or get the singleton instance
     _authService = widget.authService ?? AuthService();
-    // Use the provided url service or get the singleton instance
     _urlService = widget.urlService ?? UrlService();
     
-    // Initialize session state
     _userSession = _authService.currentSession;
     
-    // Listen for auth state changes
     _authSubscription = _authService.authStateChanges.listen((session) {
       if (mounted) {
         setState(() {
@@ -51,15 +47,18 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
     
-    // Initialize authentication service
     _authService.initialize().then((_) {
       if (kDebugMode) {
         if (_authService.currentSession != null) {
-          print('Авторизация успешна:');
-          print('Пользователь: ${_authService.currentSession!.user!.name} (${_authService.currentSession!.user!.email})');
-          print('Срок действия токена: ${_authService.currentSession!.expiresAt}');
+          print('Authorization Success:');
+          if (_authService.currentSession!.user != null) {
+            print('User: ${_authService.currentSession!.user!.name} (${_authService.currentSession!.user!.email})');
+          } else {
+            print("There's no user information");
+          }
+          print('Token expiration: ${_authService.currentSession!.expiresAt}');
         } else {
-          print('Пользователь не авторизован');
+          print("User isn't authorized");
         }
       }
     });
@@ -67,7 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    // Отписываемся от потока аутентификации
     _authSubscription.cancel();
     super.dispose();
   }
@@ -84,7 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         actions: [
-          // Show different UI based on authentication state
           if (_userSession != null)
             UserProfileHeader(
               userSession: _userSession!,
@@ -114,7 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 children: [
-                  // Different UI based on authentication
                   if (_userSession != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 24),
@@ -122,7 +118,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   
                   UrlShortenerForm(
-                    // Pass user session to show different options for authenticated users
                     isAuthenticated: _userSession != null,
                     urlService: _urlService,
                   ),
@@ -160,7 +155,9 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome back, ${_userSession!.user!.name}!',
+                  _userSession!.user != null
+                    ? 'Welcome back, ${_userSession!.user!.name}!' 
+                    : 'Welcome back!',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -286,8 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-  
-  /// Navigate to the auth screen
+
   void _navigateToAuth() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => const AuthScreen()),

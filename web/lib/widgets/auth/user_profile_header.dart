@@ -4,15 +4,12 @@ import 'package:link_shortener/screens/profile_screen.dart';
 import 'package:link_shortener/screens/url_management_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
 
-/// A widget that displays the user's profile in the app header
 class UserProfileHeader extends StatelessWidget {
-  /// Creates a user profile header
   const UserProfileHeader({
     super.key,
     required this.userSession,
   });
 
-  /// The current user session
   final UserSession userSession;
 
   @override
@@ -104,14 +101,12 @@ class UserProfileHeader extends StatelessWidget {
   Widget _buildAvatar(BuildContext context) {
     final user = userSession.user;
 
-    // Check if the user has an avatar URL
-    if (user != null && user.avatarUrl!.isNotEmpty) {
+    if (user != null && user.avatarUrl != null && user.avatarUrl!.isNotEmpty) {
       return CircleAvatar(
         radius: 16,
         backgroundImage: NetworkImage(user.avatarUrl!),
       );
     } else {
-      // If no avatar, use initials
       final initials = _getUserInitials();
       
       return CircleAvatar(
@@ -129,17 +124,30 @@ class UserProfileHeader extends StatelessWidget {
     }
   }
 
-  String _getUserName() => userSession.user!.name;
+  String _getUserName() {
+    final user = userSession.user;
+    if (user == null) {
+      return 'User';
+    }
+    return user.name.isNotEmpty ? user.name : 'User';
+  }
 
   String _getUserInitials() {
-    final name = userSession.user!.name;
-    
-    if (name.isEmpty) {
-      // If no name, use first letter of email
-      return userSession.user!.email.substring(0, 1).toUpperCase();
+    final user = userSession.user;
+    if (user == null) {
+      return 'U';
     }
     
-    // Get initials from name
+    final name = user.name;
+    
+    if (name.isEmpty) {
+      if (user.email.isNotEmpty) {
+        return user.email.substring(0, 1).toUpperCase();
+      } else {
+        return 'U';
+      }
+    }
+    
     final parts = name.split(' ');
     if (parts.length == 1) {
       return parts.first.substring(0, 1).toUpperCase();

@@ -5,9 +5,7 @@ import 'package:link_shortener/models/short_url.dart';
 import 'package:link_shortener/services/auth_service.dart';
 import 'package:link_shortener/services/url_service.dart';
 
-/// Screen for managing user's shortened URLs
 class UrlManagementScreen extends StatefulWidget {
-  /// Creates a new URL management screen
   const UrlManagementScreen({super.key});
 
   @override
@@ -28,10 +26,9 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
     _loadUrls();
   }
   
-  // Load the user's URLs
   Future<void> _loadUrls() async {
     if (!_authService.isAuthenticated) {
-      Navigator.of(context).pop(); // Redirect if not authenticated
+      Navigator.of(context).pop();
       return;
     }
     
@@ -54,7 +51,6 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
     }
   }
   
-  // Delete a URL
   Future<void> _deleteUrl(ShortUrl url) async {
     try {
       final confirmed = await _showDeleteConfirmation(url);
@@ -95,7 +91,6 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
     }
   }
   
-  // Copy a URL to clipboard
   Future<void> _copyToClipboard(String url) async {
     await Clipboard.setData(ClipboardData(text: url));
     if (mounted) {
@@ -108,7 +103,6 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
     }
   }
   
-  // Show delete confirmation dialog
   Future<bool?> _showDeleteConfirmation(ShortUrl url) => showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -134,16 +128,13 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
       ),
     );
   
-  // Format the creation date
   String _formatDate(DateTime date) => DateFormat.yMMMd().format(date);
   
-  // Truncate long URLs for display
   String _truncateUrl(String url, {int maxLength = 40}) {
     if (url.length <= maxLength) return url;
     return '${url.substring(0, maxLength)}...';
   }
   
-  // Build an empty state widget
   Widget _buildEmptyState() => Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -176,7 +167,6 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
       ),
     );
   
-  // Build the list of URLs
   Widget _buildUrlList() => RefreshIndicator(
       onRefresh: _loadUrls,
       child: ListView.builder(
@@ -193,14 +183,12 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Original URL
                   Text(
                     _truncateUrl(url.originalUrl, maxLength: 50),
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 16),
                   
-                  // Short URL with copy button
                   Row(
                     children: [
                       Expanded(
@@ -223,17 +211,14 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
                   
                   const SizedBox(height: 8),
                   
-                  // Metadata row
                   Wrap(
                     spacing: 16,
                     children: [
-                      // Created date
                       Text(
                         'Created: ${_formatDate(url.createdAt)}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       
-                      // Expiry date
                       if (url.expiresAt != null)
                         Text(
                           'Expires: ${_formatDate(url.expiresAt!)}',
@@ -244,7 +229,6 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
                           ),
                         ),
                       
-                      // Click count
                       Text(
                         'Clicks: ${url.clickCount}',
                         style: Theme.of(context).textTheme.bodySmall,
@@ -254,11 +238,9 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
                   
                   const SizedBox(height: 16),
                   
-                  // Action buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // Delete button
                       OutlinedButton.icon(
                         onPressed: () => _deleteUrl(url),
                         icon: Icon(
@@ -287,7 +269,6 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
       ),
     );
   
-  // Build the error state
   Widget _buildErrorState() => Center(
       child: Padding(
         padding: const EdgeInsets.all(24),

@@ -18,9 +18,7 @@ class FeatureSection extends StatelessWidget {
           const SizedBox(height: 48),
           LayoutBuilder(
             builder: (context, constraints) {
-              // Responsive layout based on available width
               if (constraints.maxWidth > 900) {
-                // Desktop layout - 3 columns
                 final featureItems = _buildFeatureItems(context);
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,7 +29,6 @@ class FeatureSection extends StatelessWidget {
                   ],
                 );
               } else if (constraints.maxWidth > 600) {
-                // Tablet layout - 2 columns
                 return Column(
                   children: [
                     Row(
@@ -46,7 +43,6 @@ class FeatureSection extends StatelessWidget {
                   ],
                 );
               } else {
-                // Mobile layout - 1 column
                 return Column(
                   children: _buildFeatureItems(context)
                       .map((item) => Padding(

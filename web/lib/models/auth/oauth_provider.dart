@@ -1,4 +1,5 @@
 enum OAuthProvider {
+  unknown,
   google,
   apple,
   github,
@@ -13,6 +14,8 @@ extension OAuthProviderExtension on OAuthProvider {
         return 'Apple';
       case OAuthProvider.github:
         return 'GitHub';
+      case OAuthProvider.unknown:
+        throw UnimplementedError();
     }
   }
   
@@ -24,6 +27,8 @@ extension OAuthProviderExtension on OAuthProvider {
         return 'assets/icons/apple.png';
       case OAuthProvider.github:
         return 'assets/icons/github.png';
+      case OAuthProvider.unknown:
+        throw UnimplementedError();
     }
   }
   
@@ -35,6 +40,8 @@ extension OAuthProviderExtension on OAuthProvider {
         return '#000000';
       case OAuthProvider.github:
         return '#24292E';
+      case OAuthProvider.unknown:
+        throw UnimplementedError();
     }
   }
   
@@ -46,6 +53,8 @@ extension OAuthProviderExtension on OAuthProvider {
         return '#FFFFFF';
       case OAuthProvider.github:
         return '#FFFFFF';
+      case OAuthProvider.unknown:
+        throw UnimplementedError();
     }
   }
 }

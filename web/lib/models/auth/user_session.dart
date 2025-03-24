@@ -1,8 +1,6 @@
 import 'package:link_shortener/models/auth/user.dart';
 
-/// User session model
 class UserSession {
-  /// Creates a new user session
   UserSession({
     required this.token,
     required this.refreshToken,
@@ -10,7 +8,6 @@ class UserSession {
     this.user,
   });
 
-  /// Create a session from JSON response
   factory UserSession.fromJson(Map<String, dynamic> json) {
     final expiresAt = DateTime.fromMillisecondsSinceEpoch(
       json['access_token_expiry_ms'] as int,
@@ -28,22 +25,16 @@ class UserSession {
     );
   }
 
-  /// Access token
   final String token;
 
-  /// Refresh token
   final String refreshToken;
 
-  /// Expiration date
   final DateTime expiresAt;
   
-  /// User information
   final User? user;
 
-  /// Whether the token is expired
   bool get isExpired => expiresAt.isBefore(DateTime.now());
 
-  /// Convert session to JSON
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{
       'access_token': token,

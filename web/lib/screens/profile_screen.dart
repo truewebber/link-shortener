@@ -141,7 +141,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           constraints: const BoxConstraints(maxWidth: 600),
           child: Column(
             children: [
-              // Profile header with avatar
               CircleAvatar(
                 radius: 60,
                 backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -160,7 +159,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 24),
               
-              // User name
               Text(
                 _user!.name,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -170,7 +168,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 8),
               
-              // User email
               Text(
                 _user!.email,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -180,7 +177,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 8),
               
-              // Provider badge
               Chip(
                 label: Text('Signed in with ${_providerName(_user!.provider)}'),
                 avatar: Icon(_providerIcon(_user!.provider)),
@@ -194,7 +190,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Divider(),
               const SizedBox(height: 32),
               
-              // Profile actions
               ElevatedButton.icon(
                 onPressed: _handleSignOut,
                 icon: const Icon(Icons.logout),
@@ -228,11 +223,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   IconData _providerIcon(provider) {
     switch (provider) {
       case 'google':
-        return Icons.g_mobiledata; // Placeholder for Google
+        return Icons.g_mobiledata;
       case 'apple':
-        return Icons.apple; // Placeholder for Apple
+        return Icons.apple;
       case 'github':
-        return Icons.code; // Placeholder for GitHub
+        return Icons.code;
       default:
         return Icons.account_circle;
     }

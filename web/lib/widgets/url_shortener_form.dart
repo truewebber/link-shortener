@@ -4,19 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:link_shortener/services/url_service.dart';
 
-/// Form for shortening URLs
 class UrlShortenerForm extends StatefulWidget {
-  /// Creates a URL shortener form
   const UrlShortenerForm({
     super.key,
     this.isAuthenticated = false,
     this.urlService,
   });
 
-  /// Whether the user is authenticated
   final bool isAuthenticated;
   
-  /// Service for URL shortening, can be injected for testing
   final UrlService? urlService;
 
   @override
@@ -33,10 +29,8 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
   bool _isValidUrl = false;
   late final UrlService _urlService;
   
-  // TTL selection for authenticated users
-  String _selectedTtl = '3m'; // Default to 3 months
-  
-  // Animation controller for success animation
+  String _selectedTtl = '3m';
+
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
 
@@ -44,7 +38,6 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
   void initState() {
     super.initState();
     
-    // Use provided service or get singleton instance
     _urlService = widget.urlService ?? UrlService();
     
     _animationController = AnimationController(
@@ -90,10 +83,8 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
     super.dispose();
   }
   
-  /// Handle form submission
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) {
-      // Form is not valid, validation errors will be shown
       return;
     }
     
@@ -117,7 +108,6 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
         _shortenedUrl = result.shortUrl;
       });
       
-      // Play success animation
       await _animationController.forward();
     } catch (e) {
       setState(() {
@@ -127,32 +117,23 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
     }
   }
   
-  /// Get expiration date based on selected TTL
   DateTime? _getExpirationDate() {
     if (!widget.isAuthenticated) {
-      // Default TTL for anonymous users is 3 months
-      return DateTime.now().add(const Duration(days: 90));
+      return DateTime.now().add(const Duration(days: 91));
     }
     
-    // Parse the selected TTL
     switch (_selectedTtl) {
       case 'never':
-        return null; // No expiration
-      case '24h':
-        return DateTime.now().add(const Duration(hours: 24));
-      case '3d':
-        return DateTime.now().add(const Duration(days: 3));
-      case '7d':
-        return DateTime.now().add(const Duration(days: 7));
-      case '1m':
-        return DateTime.now().add(const Duration(days: 30));
+        return null;
       case '3m':
-        return DateTime.now().add(const Duration(days: 90));
+        return DateTime.now().add(const Duration(days: 91));
       case '6m':
-        return DateTime.now().add(const Duration(days: 180));
-      default:
-        return DateTime.now().add(const Duration(days: 90)); // Default to 3 months
+        return DateTime.now().add(const Duration(days: 183));
+      case '12m':
+        return DateTime.now().add(const Duration(days: 365));
     }
+
+    return null;
   }
   
   /// Reset the form to initial state
@@ -164,14 +145,12 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
       _errorMessage = null;
       _urlController.clear();
       _isValidUrl = false;
-      _selectedTtl = '3m'; // Reset to default
+      _selectedTtl = '3m';
     });
-    
-    // Reset animation
+
     _animationController.reset();
   }
   
-  /// Copy shortened URL to clipboard
   Future<void> _copyToClipboard() async {
     if (_shortenedUrl == null) return;
     
@@ -186,7 +165,6 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
     }
   }
   
-  // Format a duration in a human-readable format
   String _formatDuration(Duration duration) {
     if (duration.inHours < 24) {
       return '${duration.inHours} hours';
@@ -201,7 +179,6 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
     }
   }
   
-  // Build TTL options for authenticated users
   Widget _buildTtlOptions() => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -225,48 +202,46 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
               });
             }
           },
-          items: [
-            if (widget.isAuthenticated)
-              const DropdownMenuItem(
-                value: 'never',
-                child: Text('Never'),
-              ),
-            const DropdownMenuItem(
-              value: '24h',
-              child: Text('24 hours'),
-            ),
-            const DropdownMenuItem(
-              value: '3d',
-              child: Text('3 days'),
-            ),
-            const DropdownMenuItem(
-              value: '7d',
-              child: Text('7 days'),
-            ),
-            const DropdownMenuItem(
-              value: '1m',
-              child: Text('1 month'),
-            ),
-            const DropdownMenuItem(
-              value: '3m',
-              child: Text('3 months'),
-            ),
-            const DropdownMenuItem(
-              value: '6m',
-              child: Text('6 months'),
-            ),
-          ],
+          items: _getTTLDropdownElements(),
         ),
       ],
     );
-  
-  // Build the form view
+
+  List<DropdownMenuItem<String>> _getTTLDropdownElements() {
+    if (!widget.isAuthenticated) {
+      return [
+        const DropdownMenuItem(
+          value: '3m',
+          child: Text('3 months'),
+        )
+      ];
+    }
+
+    return [
+      const DropdownMenuItem(
+        value: '3m',
+        child: Text('3 months'),
+      ),
+      const DropdownMenuItem(
+        value: '6m',
+        child: Text('6 months'),
+      ),
+      const DropdownMenuItem(
+        value: '12m',
+        child: Text('12 months'),
+      ),
+      const DropdownMenuItem(
+        value: 'never',
+        child: Text('Never'),
+      ),
+    ];
+  }
+
   Widget _buildFormView() => Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // URL input field
           TextFormField(
             controller: _urlController,
             decoration: InputDecoration(
@@ -304,11 +279,9 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
             },
           ),
           
-          // TTL selection for authenticated users only
           if (widget.isAuthenticated)
             _buildTtlOptions()
           else
-            // Show expiration notice for anonymous users
             Padding(
               padding: const EdgeInsets.only(top: 16),
               child: Text(
@@ -319,7 +292,6 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
               ),
             ),
           
-          // Submit button
           Padding(
             padding: const EdgeInsets.only(top: 24),
             child: ElevatedButton(
@@ -339,7 +311,6 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
             ),
           ),
           
-          // Error message
           if (_errorMessage != null)
             Padding(
               padding: const EdgeInsets.only(top: 16),
@@ -355,11 +326,9 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
       ),
     );
   
-  // Build the success view
   Widget _buildSuccessView() => Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Success animation and message
         ScaleTransition(
           scale: _scaleAnimation,
           child: Container(
@@ -392,7 +361,6 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
                     ),
                   ),
                 const SizedBox(height: 24),
-                // Shortened URL display
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -426,7 +394,6 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
           ),
         ),
         
-        // Create another button
         Padding(
           padding: const EdgeInsets.only(top: 24),
           child: OutlinedButton(

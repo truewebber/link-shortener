@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/src/widgets/framework.dart';
 import 'package:link_shortener/models/auth/oauth_provider.dart';
 import 'package:link_shortener/models/auth/user.dart';
 import 'package:link_shortener/models/auth/user_session.dart';
@@ -48,92 +49,10 @@ class MockAuthService implements AuthService {
     }
   }
   
-  /// Mock implementation of handleOAuthCallback
-  Future<UserSession> handleOAuthCallback(String code, String provider) async {
-    final providerEnum = _getOAuthProviderFromString(provider);
-    
-    final user = User(
-      id: provider == 'google' ? 1 : (provider == 'apple' ? 2 : 3),
-      name: 'Test User',
-      email: 'test@example.com',
-      provider: providerEnum,
-    );
-    
-    final session = UserSession(
-      user: user,
-      token: 'mock_token_${provider}_$code',
-      refreshToken: 'mock_refresh_${provider}_$code',
-      expiresAt: DateTime.now().add(const Duration(hours: 1)),
-    );
-    
-    // Save session
-    await _persistSession(session);
-    
-    _currentSession = session;
-    _authStateController.add(_currentSession);
-    
-    return session;
-  }
-  
-  /// Mock implementation of signInWithOAuth
-  @override
-  Future<void> signInWithOAuth(OAuthProvider provider) async {
-    // Just track that the method was called, don't actually make network requests
-    if (kDebugMode) {
-      print('Mock OAuth sign in with $provider');
-    }
-  }
-  
-  /// Mock implementation of signOut
-  @override
-  Future<void> signOut() async {
-    _storage.clear();
-    _currentSession = null;
-    _authStateController.add(null);
-  }
-  
-  /// Mock implementation of refreshToken
-  @override
-  Future<bool> refreshToken() async {
-    if (_currentSession == null || _currentSession!.refreshToken == '') {
-      return false;
-    }
-    
-    // Create a new session with extended expiry
-    final session = UserSession(
-      user: _currentSession!.user,
-      token: 'refreshed_${_currentSession!.token}',
-      refreshToken: _currentSession!.refreshToken,
-      expiresAt: DateTime.now().add(const Duration(hours: 1)),
-    );
-    
-    await _persistSession(session);
-    
-    _currentSession = session;
-    _authStateController.add(_currentSession);
-    
-    return true;
-  }
-  
   /// Mock implementation of getUserProfile
   @override
   Future<User?> getUserProfile() async => _currentSession?.user;
-  
-  /// Mock implementation of checkAuthentication
-  @override
-  Future<bool> checkAuthentication() async {
-    await _loadPersistedSession();
-    return isAuthenticated;
-  }
-  
-  // Helper method for mocking persistence
-  Future<void> _persistSession(UserSession session) async {
-    _storage[_tokenKey] = session.token;
-    _storage[_refreshTokenKey] = session.refreshToken;
-    _storage[_tokenExpiryKey] = session.expiresAt.millisecondsSinceEpoch.toString();
-    _storage[_userDataKey] = jsonEncode(session.user!.toJson());
-  }
-  
+
   // Helper method for loading persisted session
   Future<void> _loadPersistedSession() async {
     final token = _storage[_tokenKey];
@@ -162,34 +81,7 @@ class MockAuthService implements AuthService {
     
     _authStateController.add(_currentSession);
   }
-  
-  @override
-  Future<Map<String, String>> getAuthHeaders() async {
-    final headers = <String, String>{
-      'Content-Type': 'application/json',
-    };
-    
-    if (isAuthenticated) {
-      headers['Authorization'] = 'Bearer ${_currentSession!.token}';
-    }
-    
-    return headers;
-  }
-  
-  // Helper method to convert string to OAuthProvider
-  OAuthProvider _getOAuthProviderFromString(String provider) {
-    switch (provider) {
-      case 'google':
-        return OAuthProvider.google;
-      case 'apple':
-        return OAuthProvider.apple;
-      case 'github':
-        return OAuthProvider.github;
-      default:
-        return OAuthProvider.google;
-    }
-  }
-  
+
   @override
   void dispose() {
     _authStateController.close();
@@ -198,6 +90,42 @@ class MockAuthService implements AuthService {
   @override
   Future<void> saveSession(UserSession session) {
     // TODO: implement saveSession
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, String>> getAuthHeaders({BuildContext? context}) {
+    // TODO: implement getAuthHeaders
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> refreshToken({BuildContext? context}) {
+    // TODO: implement refreshToken
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> signInWithOAuth(OAuthProvider provider, {BuildContext? context}) {
+    // TODO: implement signInWithOAuth
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AuthResult> getUserProfileWithAuthStatus({BuildContext? context}) {
+    // TODO: implement getUserProfileWithAuthStatus
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>> handleOAuthSuccessCallback(Uri uri) {
+    // TODO: implement handleOAuthSuccessCallback
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> signOut({BuildContext? context}) {
+    // TODO: implement signOut
     throw UnimplementedError();
   }
 }

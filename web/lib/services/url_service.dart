@@ -1,30 +1,32 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:link_shortener/config/app_config.dart';
 import 'package:link_shortener/models/short_url.dart';
 import 'package:link_shortener/services/auth_service.dart';
+import 'package:link_shortener/utils/notification_utils.dart';
 
-/// Service for handling URL shortening operations
 class UrlService {
   factory UrlService() => _instance;
   UrlService._internal();
   
-  // Singleton instance
   static final UrlService _instance = UrlService._internal();
   
   final _config = AppConfig.fromWindow();
   final _client = http.Client();
   final _authService = AuthService();
-  
-  // Create a shortened URL
+
   Future<ShortUrl> createShortUrl({
     required String originalUrl,
     String? customAlias,
     DateTime? expiresAt,
+    BuildContext? context,
   }) async {
+    _checkUserAuthorized(context: context);
+
     try {
-      final headers = await _authService.getAuthHeaders();
+      final headers = await _authService.getAuthHeaders(context: context);
       
       final payload = {
         'originalUrl': originalUrl,
@@ -43,24 +45,24 @@ class UrlService {
         return ShortUrl.fromJson(data);
       } else {
         final errorMsg = _parseErrorMessage(response);
-        throw Exception('Failed to create short URL: $errorMsg');
+        throw Exception('non 200 status code: $errorMsg');
       }
     } catch (e) {
       if (kDebugMode) {
         print('Error creating short URL: $e');
       }
+      
+      NotificationUtils.showError(context, 'Failed to create short URL');
+
       rethrow;
     }
   }
   
-  // Get a list of URLs for the authenticated user
-  Future<List<ShortUrl>> getUserUrls() async {
-    if (!_authService.isAuthenticated) {
-      throw Exception('User is not authenticated');
-    }
+  Future<List<ShortUrl>> getUserUrls({BuildContext? context}) async {
+    _checkUserAuthorized(context: context);
     
     try {
-      final headers = await _authService.getAuthHeaders();
+      final headers = await _authService.getAuthHeaders(context: context);
       
       final response = await _client.get(
         Uri.parse('${_config.apiBaseUrl}/api/urls'),
@@ -72,20 +74,24 @@ class UrlService {
         return data.map((item) => ShortUrl.fromJson(item)).toList();
       } else {
         final errorMsg = _parseErrorMessage(response);
-        throw Exception('Failed to get user URLs: $errorMsg');
+        throw Exception('non 200 status code: $errorMsg');
       }
     } catch (e) {
       if (kDebugMode) {
         print('Error getting user URLs: $e');
       }
+
+      NotificationUtils.showError(context, 'Error getting list of URLs');
+      
       rethrow;
     }
   }
-  
-  // Get details of a specific URL
-  Future<ShortUrl> getUrlDetails(String shortId) async {
+
+  Future<ShortUrl> getUrlDetails(String shortId, {BuildContext? context}) async {
+    _checkUserAuthorized(context: context);
+
     try {
-      final headers = await _authService.getAuthHeaders();
+      final headers = await _authService.getAuthHeaders(context: context);
       
       final response = await _client.get(
         Uri.parse('${_config.apiBaseUrl}/api/urls/$shortId'),
@@ -97,24 +103,24 @@ class UrlService {
         return ShortUrl.fromJson(data);
       } else {
         final errorMsg = _parseErrorMessage(response);
-        throw Exception('Failed to get URL details: $errorMsg');
+        throw Exception('non 200 status code: $errorMsg');
       }
     } catch (e) {
       if (kDebugMode) {
         print('Error getting URL details: $e');
       }
+
+      NotificationUtils.showError(context, 'Error getting URL details');
+
       rethrow;
     }
   }
-  
-  // Delete a shortened URL
-  Future<bool> deleteUrl(String shortId) async {
-    if (!_authService.isAuthenticated) {
-      throw Exception('User is not authenticated');
-    }
+
+  Future<bool> deleteUrl(String shortId, {BuildContext? context}) async {
+    _checkUserAuthorized(context: context);
     
     try {
-      final headers = await _authService.getAuthHeaders();
+      final headers = await _authService.getAuthHeaders(context: context);
       
       final response = await _client.delete(
         Uri.parse('${_config.apiBaseUrl}/api/urls/$shortId'),
@@ -122,31 +128,34 @@ class UrlService {
       );
       
       if (response.statusCode == 204 || response.statusCode == 200) {
+        NotificationUtils.showSuccess(context, 'Ссылка успешно удалена');
+
         return true;
       } else {
         final errorMsg = _parseErrorMessage(response);
-        throw Exception('Failed to delete URL: $errorMsg');
+        throw Exception('non 200 status code: $errorMsg');
       }
     } catch (e) {
       if (kDebugMode) {
         print('Error deleting URL: $e');
       }
+
+      NotificationUtils.showError(context, 'Error deleting URL');
+      
       rethrow;
     }
   }
-  
-  // Update a shortened URL (for authenticated users)
+
   Future<ShortUrl> updateUrl({
     required String shortId,
     String? customAlias,
     DateTime? expiresAt,
+    BuildContext? context,
   }) async {
-    if (!_authService.isAuthenticated) {
-      throw Exception('User is not authenticated');
-    }
+    _checkUserAuthorized(context: context);
     
     try {
-      final headers = await _authService.getAuthHeaders();
+      final headers = await _authService.getAuthHeaders(context: context);
       
       final payload = {
         if (customAlias != null) 'customAlias': customAlias,
@@ -160,37 +169,37 @@ class UrlService {
       );
       
       if (response.statusCode == 200) {
+        NotificationUtils.showSuccess(context, 'URL was updated');
+        
         final data = jsonDecode(response.body);
         return ShortUrl.fromJson(data);
       } else {
         final errorMsg = _parseErrorMessage(response);
-        throw Exception('Failed to update URL: $errorMsg');
+        throw Exception('non 200 status code: $errorMsg');
       }
     } catch (e) {
       if (kDebugMode) {
         print('Error updating URL: $e');
       }
+      
+      NotificationUtils.showError(context, 'Error updating URL');
+      
       rethrow;
     }
   }
   
-  // Helper method to parse error messages from the API
-  String _parseErrorMessage(http.Response response) {
-    try {
-      final data = jsonDecode(response.body);
-      if (data.containsKey('message')) {
-        return data['message'] as String;
-      } else if (data.containsKey('error')) {
-        return data['error'] as String;
-      } else {
-        return 'Error ${response.statusCode}';
-      }
-    } catch (e) {
-      return 'Error ${response.statusCode}';
+  String _parseErrorMessage(http.Response response) => response.body;
+
+  void _checkUserAuthorized({BuildContext? context}) {
+    if (_authService.isAuthenticated) {
+      return;
     }
+
+    NotificationUtils.showWarning(context, 'To list your short URL you have to be logged in');
+
+    throw Exception('User is not authenticated');
   }
-  
-  // Dispose method to clean up resources
+
   void dispose() {
     _client.close();
   }

@@ -4,9 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:link_shortener/config/app_config.dart';
 
-/// Exception thrown when API requests fail
 class ApiException implements Exception {
-  
   ApiException(this.message, {this.statusCode});
   final String message;
   final int? statusCode;
@@ -16,33 +14,22 @@ class ApiException implements Exception {
  (Status code: $statusCode)""" : ''}';
 }
 
-/// Service for interacting with the Link Shortener API
 class ApiService {
-
-  /// Creates a new API service with the given config
-  /// 
-  /// Optionally, a custom HTTP client can be injected for testing
   ApiService(this._config, {http.Client? client}) : _client = client ?? http.Client();
   final AppConfig _config;
   final http.Client _client;
 
   Uri _buildUrl(String path) {
     final baseUrl = _config.apiBaseUrl;
-    // Remove trailing slash from base URL and leading slash from path
     final cleanBase = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
     final cleanPath = path.startsWith('/') ? path.substring(1) : path;
     return Uri.parse('$cleanBase/$cleanPath');
   }
 
-  /// Disposes the HTTP client when the service is no longer needed
   void dispose() {
     _client.close();
   }
 
-  /// Shortens a URL
-  /// 
-  /// Returns the shortened URL as a string
-  /// Throws [ApiException] if the request fails
   Future<String> shortenUrl(String url) async {
     try {
       if (kDebugMode) {
@@ -71,7 +58,6 @@ class ApiService {
             errorMessage = errorData['message'];
           }
         } catch (e) {
-          // If we can't parse the error message, use the default one
           if (kDebugMode) {
             print('Could not parse error response: $e');
           }
@@ -103,9 +89,6 @@ class ApiService {
     }
   }
 
-  /// Checks if the API is healthy
-  /// 
-  /// Returns true if the API is healthy, false otherwise
   Future<bool> checkHealth() async {
     try {
       final response = await _client.get(_buildUrl('/health'))
@@ -118,11 +101,7 @@ class ApiService {
       return false;
     }
   }
-  
-  /// Gets information about a shortened URL
-  /// 
-  /// Returns a map containing information about the URL
-  /// Throws [ApiException] if the request fails
+
   Future<Map<String, dynamic>> getUrlInfo(String urlHash) async {
     try {
       final response = await _client.get(
@@ -154,4 +133,4 @@ class ApiService {
       throw ApiException('Error: ${e.toString()}');
     }
   }
-} 
+}
