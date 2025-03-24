@@ -66,7 +66,25 @@ class AuthService {
   static const String _tokenExpiryKey = 'auth_token_expiry';
   static const String _userDataKey = 'auth_user_data';
 
+  bool _isLoadingSession = false;
+  bool _isRefreshingToken = false;
+  bool _isInitialized = false;
+
+  bool _isHandlingOAuthCallback = false;
+
+  bool _isSigningOut = false;
+
+  bool _isSavingSession = false;
+
   Future<void> initialize() async {
+    if (_isInitialized) {
+      if (kDebugMode) {
+        print('AuthService already initialized, skipping duplicate call');
+      }
+      return;
+    }
+    
+    _isInitialized = true;
     await _loadPersistedSession();
   }
 
@@ -83,16 +101,39 @@ class AuthService {
   }
 
   Future<void> saveSession(UserSession session) async {
-    await initLocalStorage();
+    if (_isSavingSession) {
+      if (kDebugMode) {
+        print('Session saving already in progress, waiting...');
+      }
 
-    await _persistSession(session);
+      for (int i = 0; i < 10; i++) {
+        await Future.delayed(Duration(milliseconds: 50));
+        if (!_isSavingSession) break;
+      }
+      
+      if (_isSavingSession) {
+        if (kDebugMode) {
+          print('Session saving still in progress, proceeding with new session');
+        }
+      }
+    }
+    
+    _isSavingSession = true;
+    
+    try {
+      await initLocalStorage();
 
-    _currentSession = session;
-    _authStateController.add(session);
+      await _persistSession(session);
 
-    if (kDebugMode) {
-      print('Session saved successfully');
-      print('Token expires at: ${session.expiresAt}');
+      _currentSession = session;
+      _authStateController.add(session);
+
+      if (kDebugMode) {
+        print('Session saved successfully');
+        print('Token expires at: ${session.expiresAt}');
+      }
+    } finally {
+      _isSavingSession = false;
     }
   }
 
@@ -124,13 +165,22 @@ class AuthService {
   }
 
   Future<bool> refreshToken({BuildContext? context}) async {
+    if (_isRefreshingToken) {
+      if (kDebugMode) {
+        print('Token refresh already in progress, skipping duplicate call');
+      }
+      return false;
+    }
+    
+    _isRefreshingToken = true;
+    
     if (_currentSession == null || _currentSession!.refreshToken == '') {
       if (kDebugMode) {
         print('Unable refresh token: no accessToken or refreshToken');
       }
 
       NotificationUtils.showWarning(context, 'Authorization required, please Log In again');
-
+      _isRefreshingToken = false;
       return false;
     }
 
@@ -166,6 +216,7 @@ class AuthService {
         _currentSession = session;
         _authStateController.add(session);
 
+        _isRefreshingToken = false;
         return true;
       } else {
         if (kDebugMode) {
@@ -175,6 +226,7 @@ class AuthService {
         NotificationUtils.showError(context, 'Session expired, please Log in again');
 
         await signOut();
+        _isRefreshingToken = false;
         return false;
       }
     } catch (e) {
@@ -185,33 +237,51 @@ class AuthService {
       NotificationUtils.showError(context, 'Error to refresh session');
 
       await signOut();
+      _isRefreshingToken = false;
       return false;
     }
   }
 
   Future<void> signOut({BuildContext? context}) async {
-    if (isAuthenticated) {
-      try {
-        await _client
-            .post(
-            Uri.parse('${_config.apiBaseUrl}/api/auth/logout'),
-            headers: await getAuthHeaders(context: context),
-        );
-      } catch (e) {
-        if (kDebugMode) {
-          print('Error during logout: $e');
+    if (_isSigningOut) {
+      if (kDebugMode) {
+        print('Sign out already in progress, skipping');
+      }
+      return;
+    }
+    
+    _isSigningOut = true;
+    
+    try {
+      if (isAuthenticated) {
+        try {
+          await _client
+              .post(
+              Uri.parse('${_config.apiBaseUrl}/api/auth/logout'),
+              headers: await getAuthHeaders(context: context),
+          );
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error during logout: $e');
+          }
         }
       }
+
+      await initLocalStorage();
+      await _storage.deleteItem(_tokenKey);
+      await _storage.deleteItem(_refreshTokenKey);
+      await _storage.deleteItem(_tokenExpiryKey);
+      await _storage.deleteItem(_userDataKey);
+
+      _currentSession = null;
+      _authStateController.add(null);
+      
+      if (kDebugMode) {
+        print('User signed out successfully');
+      }
+    } finally {
+      _isSigningOut = false;
     }
-
-    await initLocalStorage();
-    await _storage.deleteItem(_tokenKey);
-    await _storage.deleteItem(_refreshTokenKey);
-    await _storage.deleteItem(_tokenExpiryKey);
-    await _storage.deleteItem(_userDataKey);
-
-    _currentSession = null;
-    _authStateController.add(null);
   }
 
   Future<AuthResult> getUserProfileWithAuthStatus({BuildContext? context}) async {
@@ -360,6 +430,15 @@ class AuthService {
   }
 
   Future<void> _loadPersistedSession() async {
+    if (_isLoadingSession) {
+      if (kDebugMode) {
+        print('Session loading already in progress, skipping duplicate call');
+      }
+      return;
+    }
+    
+    _isLoadingSession = true;
+
     if (kDebugMode) {
       print('Loading saved session...');
     }
@@ -392,6 +471,7 @@ class AuthService {
         print('Session is corrupted');
       }
 
+      _isLoadingSession = false;
       return;
     }
 
@@ -423,6 +503,7 @@ class AuthService {
         if (kDebugMode) {
           print('Failed to refresh');
         }
+        _isLoadingSession = false;
         return;
       }
 
@@ -430,6 +511,7 @@ class AuthService {
         print('Token refreshed');
       }
 
+      _isLoadingSession = false;
       return;
     }
 
@@ -446,6 +528,7 @@ class AuthService {
     }
 
     _authStateController.add(_currentSession);
+    _isLoadingSession = false;
   }
 
   Future<void> _persistSession(UserSession session) async {
@@ -472,7 +555,18 @@ class AuthService {
     };
 
     if (isAuthenticated) {
-      if (_isTokenExpiredOrCloseToExpiry()) {
+      if (_isRefreshingToken) {
+        if (kDebugMode) {
+          print('Waiting for token refresh to complete...');
+        }
+        
+        for (int i = 0; i < 10; i++) {
+          await Future.delayed(Duration(milliseconds: 100));
+          if (!_isRefreshingToken) break;
+        }
+      }
+      
+      if (_isTokenExpiredOrCloseToExpiry() && !_isRefreshingToken) {
         await refreshToken(context: context);
       }
 
@@ -499,26 +593,43 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>> handleOAuthSuccessCallback(Uri uri) async {
-    final accessToken = uri.queryParameters['access_token'] ?? '';
-    final refreshToken = uri.queryParameters['refresh_token'] ?? '';
-    final expiresAtMS = int.tryParse(uri.queryParameters['expires_at_ms'] ?? '0') ?? 0;
-
-    if (accessToken.isEmpty) {
+    if (_isHandlingOAuthCallback) {
       if (kDebugMode) {
-        print("Token doesn't exist");
+        print('OAuth callback handling already in progress, waiting...');
+      }
+      
+      for (int i = 0; i < 20; i++) {
+        await Future.delayed(Duration(milliseconds: 100));
+        if (!_isHandlingOAuthCallback) break;
+      }
+      
+      if (_isHandlingOAuthCallback) {
+        return {'success': false, 'error': 'OAuth callback handling timeout'};
+      }
+    }
+    
+    _isHandlingOAuthCallback = true;
+    
+    try {
+      final accessToken = uri.queryParameters['access_token'] ?? '';
+      final refreshToken = uri.queryParameters['refresh_token'] ?? '';
+      final expiresAtMS = int.tryParse(uri.queryParameters['expires_at_ms'] ?? '0') ?? 0;
+
+      if (accessToken.isEmpty) {
+        if (kDebugMode) {
+          print("Token doesn't exist");
+        }
+
+        return {'success': false, 'error': "Token doesn't exist"};
       }
 
-      return {'success': false, 'error': "Token doesn't exist"};
-    }
+      if (kDebugMode) {
+        print('Process OAuth callback:');
+        print('accessToken: ${accessToken.isNotEmpty ? '${accessToken.substring(0, 10)}...' : 'empty'}');
+        print('refreshToken: ${refreshToken.isNotEmpty ? '${refreshToken.substring(0, 10)}...' : 'empty'}');
+        print('expiresAtMS: $expiresAtMS');
+      }
 
-    if (kDebugMode) {
-      print('Process OAuth callback:');
-      print('accessToken: ${accessToken.isNotEmpty ? '${accessToken.substring(0, 10)}...' : 'empty'}');
-      print('refreshToken: ${refreshToken.isNotEmpty ? '${refreshToken.substring(0, 10)}...' : 'empty'}');
-      print('expiresAtMS: $expiresAtMS');
-    }
-
-    try {
       final tempSession = UserSession(
         token: accessToken,
         refreshToken: refreshToken,
@@ -534,6 +645,8 @@ class AuthService {
       }
 
       return {'success': false, 'error': 'Authorization issue: $e'};
+    } finally {
+      _isHandlingOAuthCallback = false;
     }
   }
 

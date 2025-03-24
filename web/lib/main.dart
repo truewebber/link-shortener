@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:link_shortener/config/app_config.dart';
 import 'package:link_shortener/config/app_config_provider.dart';
 import 'package:link_shortener/models/auth/user_session.dart';
-// import 'package:link_shortener/screens/auth_fail_screen.dart';
-// import 'package:link_shortener/screens/auth_success_screen.dart';
 import 'package:link_shortener/screens/home_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
 import 'package:link_shortener/services/url_service.dart';
@@ -76,6 +74,7 @@ class LinkShortenerApp extends StatefulWidget {
 class _LinkShortenerAppState extends State<LinkShortenerApp> {
   UserSession? _userSession;
   StreamSubscription? _authSubscription;
+  bool _isHandlingOAuth = false;
 
   @override
   void initState() {
@@ -105,35 +104,60 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
       print('_handlePotentialOAuthCallback: ${uri.path}');
     }
 
+    if (_isHandlingOAuth) {
+      if (kDebugMode) {
+        print('OAuth callback handling already in progress, skipping');
+      }
+      return;
+    }
+
     switch (uri.path) {
       case '/app/auth/success':
+        _isHandlingOAuth = true;
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          final result = await widget.authService.handleOAuthSuccessCallback(uri);
+          try {
+            final result = await widget.authService.handleOAuthSuccessCallback(uri);
 
-          if (kDebugMode) {
-            print('OAuth callback result: ${result['success']}');
-            print('Error message: ${result['error']}');
+            if (kDebugMode) {
+              print('OAuth callback result: ${result['success']}');
+              print('Error message: ${result['error']}');
+            }
+
+            if (result['success']) {
+              NotificationUtils.showSuccess(navigatorKey.currentContext, 'Authorization successful');
+            } else {
+              NotificationUtils.showError(navigatorKey.currentContext, 'Failed to authorize');
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              print('Error handling OAuth callback: $e');
+            }
+          } finally {
+            html.window.history.pushState({}, '', '/');
+            _isHandlingOAuth = false;
           }
-
-          if (result['success']) {
-            NotificationUtils.showSuccess(navigatorKey.currentContext, 'Authorization successful');
-          } else {
-            NotificationUtils.showError(navigatorKey.currentContext, 'Failed to authorize');
-          }
-
-          html.window.history.pushState({}, '', '/');
         });
+        break;
       case '/app/auth/fail':
+        _isHandlingOAuth = true;
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          if (kDebugMode) {
-            print('OAuth callback result: failed');
-            print('Error message: ${uri.queryParameters['error']}');
+          try {
+            if (kDebugMode) {
+              print('OAuth callback result: failed');
+              print('Error message: ${uri.queryParameters['error']}');
+            }
+
+            NotificationUtils.showError(navigatorKey.currentContext, 'Failed to authorize');
+          } catch (e) {
+            if (kDebugMode) {
+              print('Error handling OAuth failure: $e');
+            }
+          } finally {
+            html.window.history.pushState({}, '', '/');
+            _isHandlingOAuth = false;
           }
-
-          NotificationUtils.showError(navigatorKey.currentContext, 'Failed to authorize');
-
-          html.window.history.pushState({}, '', '/');
         });
+        break;
       default:
         if (kDebugMode) {
           print('SKIP _handlePotentialOAuthCallback: ${uri.path}');
