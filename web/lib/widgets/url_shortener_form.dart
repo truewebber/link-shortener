@@ -78,8 +78,10 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
 
   @override
   void dispose() {
-    _urlController.dispose();
-    _animationController.dispose();
+    _urlController..removeListener(_onUrlChanged)
+    ..dispose();
+    _animationController..stop()
+    ..dispose();
     super.dispose();
   }
   
@@ -95,24 +97,19 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
     
     try {
       final url = _urlController.text.trim();
-      final expiresAt = _getExpirationDate();
-      
-      final result = await _urlService.createShortUrl(
-        originalUrl: url,
-        expiresAt: expiresAt,
-      );
+      final shortenedUrl = await _urlService.shortenUrl(url);
       
       setState(() {
         _isLoading = false;
         _isSuccess = true;
-        _shortenedUrl = result.shortUrl;
+        _shortenedUrl = shortenedUrl;
       });
       
       await _animationController.forward();
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = e.toString();
+        _errorMessage = 'Failed to shorten URL. Please try again.';
       });
     }
   }
@@ -156,10 +153,12 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
     
     await Clipboard.setData(ClipboardData(text: _shortenedUrl!));
     if (mounted) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('URL copied to clipboard'),
           duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -239,90 +238,72 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
 
   Widget _buildFormView() => Form(
       key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextFormField(
-            controller: _urlController,
-            decoration: InputDecoration(
-              labelText: 'Enter URL to shorten',
-              hintText: 'https://example.com/long-url',
-              prefixIcon: const Icon(Icons.link),
-              border: const OutlineInputBorder(),
-              suffixIcon: _urlController.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: _urlController.clear,
-                  )
-                : null,
-            ),
-            keyboardType: TextInputType.url,
-            textInputAction: TextInputAction.go,
-            onFieldSubmitted: (_) {
-              if (_isValidUrl) _handleSubmit();
-            },
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter a URL';
-              }
-              
-              try {
-                final uri = Uri.parse(value);
-                if (!uri.isAbsolute || (uri.scheme != 'http' && uri.scheme != 'https')) {
-                  return 'Please enter a valid URL starting with http:// or https://';
-                }
-              } catch (e) {
-                return 'Please enter a valid URL starting with http:// or https://';
-              }
-              
-              return null;
-            },
-          ),
-          
-          if (widget.isAuthenticated)
-            _buildTtlOptions()
-          else
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Text(
-                'Links created by anonymous users expire after 3 months.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontStyle: FontStyle.italic,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (!widget.isAuthenticated)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  'Links created by anonymous users expire after 3 months.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                 ),
               ),
-            ),
-          
-          Padding(
-            padding: const EdgeInsets.only(top: 24),
-            child: ElevatedButton(
-              onPressed: _isValidUrl && !_isLoading ? _handleSubmit : null,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            TextFormField(
+              controller: _urlController,
+              decoration: InputDecoration(
+                labelText: 'Enter URL to shorten',
+                hintText: 'Paste your long URL here',
+                prefixIcon: const Icon(Icons.link),
+                errorText: !_isValidUrl && _urlController.text.isNotEmpty
+                  ? 'Please enter a valid URL'
+                  : null,
               ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a URL';
+                }
+                if (!_isValidUrl) {
+                  return 'Please enter a valid URL';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                _onUrlChanged();
+              },
+            ),
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  _errorMessage!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+              ),
+            if (widget.isAuthenticated) ...[
+              const SizedBox(height: 16),
+              _buildTtlOptions(),
+            ],
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _isLoading || !_isValidUrl ? null : _handleSubmit,
               child: _isLoading
                 ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(color: Colors.white),
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
                   )
                 : const Text('SHORTEN URL'),
             ),
-          ),
-          
-          if (_errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Text(
-                _errorMessage!,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   

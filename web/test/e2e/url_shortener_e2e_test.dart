@@ -5,8 +5,8 @@ import 'package:link_shortener/screens/home_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
 import 'package:link_shortener/services/url_service.dart';
 
-import '../mocks/mock_auth_service.dart';
-import '../mocks/service_factory.dart';
+import '../mocks/auth_service.generate.mocks.dart';
+import '../mocks/url_service.generate.mocks.dart';
 import '../test_helper.dart';
 
 void main() {
@@ -18,9 +18,8 @@ void main() {
 
   setUp(() {
     testConfig = TestAppConfig();
-    testServiceFactory.reset(); // Сбрасываем состояние сервисов
-    testAuthService = testServiceFactory.provideAuthService() as MockAuthService;
-    testUrlService = testServiceFactory.provideUrlService();
+    testAuthService = MockAuthService();
+    testUrlService = MockUrlService();
   });
   
   tearDown(() {

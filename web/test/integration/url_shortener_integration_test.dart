@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/main.dart';
 import 'package:link_shortener/services/url_service.dart';
-import '../mocks/mock_auth_service.dart';
-import '../mocks/service_factory.dart';
+import '../mocks/auth_service.generate.mocks.dart';
+import '../mocks/url_service.generate.mocks.dart';
 import '../test_helper.dart';
 
 void main() {
@@ -15,9 +15,8 @@ void main() {
   
   setUp(() {
     testConfig = TestAppConfig();
-    testServiceFactory.reset();
-    testAuthService = testServiceFactory.provideAuthService() as MockAuthService;
-    testUrlService = testServiceFactory.provideUrlService();
+    testAuthService = MockAuthService();
+    testUrlService = MockUrlService();
   });
   
   tearDown(() {

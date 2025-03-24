@@ -17,6 +17,29 @@ class UrlService {
   final _client = http.Client();
   final _authService = AuthService();
 
+  Future<String> shortenUrl(String url) async {
+    try {
+      final response = await _client.post(
+        Uri.parse('${_config.apiBaseUrl}/api/restricted_urls'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'url': url}),
+      );
+      
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return data['short_url'] as String;
+      } else {
+        final errorMsg = _parseErrorMessage(response);
+        throw Exception('Failed to shorten URL: $errorMsg');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error shortening URL: $e');
+      }
+      rethrow;
+    }
+  }
+
   Future<ShortUrl> createShortUrl({
     required String originalUrl,
     String? customAlias,

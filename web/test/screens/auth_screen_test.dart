@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/screens/auth_screen.dart';
 import 'package:link_shortener/widgets/auth/oauth_provider_button.dart';
 
-import '../mocks/mock_auth_service.dart';
+import '../mocks/auth_service.generate.mocks.dart';
 import '../test_helper.dart';
 
 void main() {

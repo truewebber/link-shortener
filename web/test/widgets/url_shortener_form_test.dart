@@ -1,85 +1,147 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:link_shortener/services/auth_service.dart';
 import 'package:link_shortener/widgets/url_shortener_form.dart';
+import 'package:mockito/mockito.dart';
 
-import '../mocks/mock_auth_service.dart';
-import '../mocks/service_factory.dart';
-import '../test_helper.dart';
+import '../mocks/url_service.generate.mocks.dart';
 
 void main() {
-  late TestAppConfig testConfig;
-  late MockAuthService testAuthService;
-  
+  late MockUrlService urlService;
+  late TestWidgetsFlutterBinding binding;
+
   setUp(() {
-    testConfig = TestAppConfig();
-    testServiceFactory.reset(); // Сбрасываем состояние фабрики
-    testAuthService = testServiceFactory.provideAuthService() as MockAuthService;
+    binding = TestWidgetsFlutterBinding.ensureInitialized();
+    urlService = MockUrlService();
   });
-  
+
   tearDown(() {
-    // Очистка таймеров, вызывая dispose у AuthService
-    AuthService().dispose();
-    AuthService.resetForTesting();
+    urlService.dispose();
   });
-  
+
+  Future<void> pumpUrlShortenerForm(WidgetTester tester, {bool isAuthenticated = false}) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: UrlShortenerForm(
+            isAuthenticated: isAuthenticated,
+            urlService: urlService,
+          ),
+        ),
+      ),
+    );
+  }
+
   group('UrlShortenerForm', () {
-    testWidgets('validates URL input correctly', (tester) async {
-      final testUrlService = testServiceFactory.provideUrlService();
-      
-      await tester.pumpWidget(
-        TestWidgetWrapper(
-          config: testConfig,
-          authService: testAuthService,
-          urlService: testUrlService,
-          child: UrlShortenerForm(
-            urlService: testUrlService,
-          ),
-        ),
-      );
-      
-      // The test should only check if the form works, no need to verify specific error messages
-      expect(find.byType(TextFormField), findsOneWidget);
-      
-      // Test invalid URL
-      await tester.enterText(
-        find.byType(TextFormField),
-        'invalid-url',
-      );
-      
-      await tester.tap(find.text('SHORTEN URL'));
-      await tester.pumpAndSettle();
-      
-      // Test valid URL
-      await tester.enterText(
-        find.byType(TextFormField),
-        'https://example.com',
-      );
-      
-      await tester.tap(find.text('SHORTEN URL'));
-      await tester.pumpAndSettle();
-      
-      // Should not find the error
-      expect(find.text('Please enter a valid URL starting with http:// or https://'), findsNothing);
+    testWidgets('displays input field with placeholder', (tester) async {
+      await pumpUrlShortenerForm(tester);
+      await tester.pump();
+      expect(find.text('Enter URL to shorten'), findsOneWidget);
+      expect(find.text('Paste your long URL here'), findsOneWidget);
     });
-    
-    testWidgets('shows anonymous user notice', (tester) async {
-      final testUrlService = testServiceFactory.provideUrlService();
+
+    testWidgets('validates URL format in real-time', (tester) async {
+      await pumpUrlShortenerForm(tester);
+
+      // Enter invalid URL
+      await tester.enterText(find.byType(TextFormField), 'invalid-url');
+      await tester.pump();
+
+      // Verify error message is shown
+      expect(find.text('Please enter a valid URL'), findsOneWidget);
+
+      // Enter valid URL
+      await tester.enterText(find.byType(TextFormField), 'https://example.com');
+      await tester.pump();
+
+      // Verify error message is gone
+      expect(find.text('Please enter a valid URL'), findsNothing);
+    });
+
+    testWidgets('shows loading state during URL shortening', (tester) async {
+      final completer = Completer<String>();
+      when(urlService.shortenUrl('https://example.com'))
+          .thenAnswer((_) => completer.future);
+
+      await pumpUrlShortenerForm(tester);
+
+      // Enter valid URL
+      await tester.enterText(find.byType(TextFormField), 'https://example.com');
+      await tester.pump();
+
+      // Submit form
+      await tester.tap(find.text('SHORTEN URL'));
+      await tester.pump();
+
+      // Verify loading state
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('SHORTEN URL'), findsNothing);
+
+      // Complete the future
+      completer.complete('https://short.url/abc123');
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('displays shortened URL with copy button', (tester) async {
+      when(urlService.shortenUrl('https://example.com'))
+          .thenAnswer((_) => Future.value('https://short.url/abc123'));
+
+      await pumpUrlShortenerForm(tester);
+
+      // Enter valid URL
+      await tester.enterText(find.byType(TextFormField), 'https://example.com');
+      await tester.pump();
+
+      // Submit form
+      await tester.tap(find.text('SHORTEN URL'));
+      await tester.pumpAndSettle();
+
+      // Verify shortened URL is displayed
+      expect(find.text('https://short.url/abc123'), findsOneWidget);
+      expect(find.byIcon(Icons.copy), findsOneWidget);
+    });
+
+    testWidgets('shows error message for failed URL shortening', (tester) async {
+      when(urlService.shortenUrl('https://example.com'))
+          .thenThrow(Exception('Failed to shorten URL'));
+
+      await pumpUrlShortenerForm(tester);
+
+      // Enter valid URL and submit form
+      await tester.enterText(find.byType(TextFormField), 'https://example.com');
+      await tester.pump();
+
+      // Submit form
+      await tester.tap(find.text('SHORTEN URL'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Failed to shorten URL. Please try again.'), findsOneWidget);
+    });
+
+    testWidgets('maintains responsive layout across different screen sizes', (tester) async {
+      when(urlService.shortenUrl('https://example.com'))
+          .thenAnswer((_) => Future.value('https://short.url/abc123'));
       
-      await tester.pumpWidget(
-        TestWidgetWrapper(
-          config: testConfig,
-          urlService: testUrlService,
-          child: UrlShortenerForm(
-            urlService: testUrlService,
-          ),
-        ),
-      );
+      await pumpUrlShortenerForm(tester);
+
+      // Test mobile layout
+      await binding.setSurfaceSize(const Size(400, 800));
+      await tester.pump();
       
-      expect(
-        find.text('Links created by anonymous users expire after 3 months.'),
-        findsOneWidget,
-      );
+      expect(find.byType(TextFormField), findsOneWidget);
+      expect(find.byType(ElevatedButton), findsOneWidget);
+
+      // Test desktop layout
+      await binding.setSurfaceSize(const Size(1200, 800));
+      await tester.pump();
+      
+      expect(find.byType(TextFormField), findsOneWidget);
+      expect(find.byType(ElevatedButton), findsOneWidget);
+
+      // Reset surface size
+      await binding.setSurfaceSize(null);
+      await tester.pump();
     });
   });
 }

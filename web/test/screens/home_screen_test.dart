@@ -4,7 +4,7 @@ import 'package:link_shortener/screens/home_screen.dart';
 import 'package:link_shortener/widgets/feature_section.dart';
 import 'package:link_shortener/widgets/url_shortener_form.dart';
 
-import '../mocks/mock_auth_service.dart';
+import '../mocks/auth_service.generate.mocks.dart';
 import '../test_helper.dart';
 
 void main() {
@@ -174,12 +174,20 @@ void main() {
       
       await tester.pumpAndSettle();
       
+      // Find the main ScrollView by looking for the one that contains the UrlShortenerForm
+      final scrollViewFinder = find.ancestor(
+        of: find.byType(UrlShortenerForm),
+        matching: find.byType(SingleChildScrollView),
+      );
+      
+      expect(scrollViewFinder, findsOneWidget);
+      
       // Test scrolling
-      await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -100));
+      await tester.drag(scrollViewFinder, const Offset(0, -100));
       await tester.pumpAndSettle();
       
       // Verify scroll position
-      final scrollController = PrimaryScrollController.of(tester.element(find.byType(SingleChildScrollView)));
+      final scrollController = PrimaryScrollController.of(tester.element(scrollViewFinder));
       expect(scrollController.position.pixels, greaterThan(0));
       
       await tester.pumpAndSettle(const Duration(seconds: 1));

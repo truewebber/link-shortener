@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/widgets/feature_section.dart';
 
-import '../mocks/mock_auth_service.dart';
+import '../mocks/auth_service.generate.mocks.dart';
 import '../test_helper.dart';
 
 void main() {

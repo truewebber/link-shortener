@@ -11,7 +11,7 @@ import 'package:link_shortener/services/url_service.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
-import 'mocks/mock_app_config.dart';
+import 'mocks/app_config.generate.mocks.dart';
 
 @GenerateMocks([http.Client])
 class MockApiService extends Mock implements ApiService {}

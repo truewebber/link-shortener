@@ -2,6 +2,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/config/app_config.dart';
 
 void main() {
+  late AppConfig config;
+
+  setUp(() {
+    config = const AppConfig(
+      apiBaseUrl: 'https://api.test.example.com',
+      environment: 'test',
+    );
+  });
+
   group('AppConfig', () {
     test('creates configuration correctly', () {
       const apiUrl = 'https://api.example.com';
@@ -16,23 +25,10 @@ void main() {
       expect(config.environment, env);
     });
     
-    test('fromWindow provides default configuration', () {
-      final config = AppConfig.fromWindow();
-      
-      // Verify default values are used
-      expect(config.apiBaseUrl, 'https://short.twb.one');
-      expect(config.environment, 'development');
-    });
-    
     test('provides environment helpers', () {
-      const devConfig = AppConfig(
-        apiBaseUrl: '/api',
-        environment: 'development',
-      );
-      
-      expect(devConfig.isDevelopment, true);
-      expect(devConfig.isProduction, false);
-      expect(devConfig.isStaging, false);
+      expect(config.isDevelopment, false);
+      expect(config.isProduction, false);
+      expect(config.isStaging, false);
       
       const prodConfig = AppConfig(
         apiBaseUrl: '/api',

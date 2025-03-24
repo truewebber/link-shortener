@@ -106,8 +106,8 @@ class AuthService {
         print('Session saving already in progress, waiting...');
       }
 
-      for (int i = 0; i < 10; i++) {
-        await Future.delayed(Duration(milliseconds: 50));
+      for (var i = 0; i < 10; i++) {
+        await Future.delayed(const Duration(milliseconds: 50));
         if (!_isSavingSession) break;
       }
       
@@ -189,8 +189,6 @@ class AuthService {
         print('New attempt to refresh token');
         print('URL: ${_config.apiBaseUrl}/api/auth/refresh');
       }
-
-      print('TOKEN: ${_currentSession!.refreshToken}');
 
       final response = await _client.post(
           Uri.parse('${_config.apiBaseUrl}/api/auth/refresh'),
@@ -560,8 +558,8 @@ class AuthService {
           print('Waiting for token refresh to complete...');
         }
         
-        for (int i = 0; i < 10; i++) {
-          await Future.delayed(Duration(milliseconds: 100));
+        for (var i = 0; i < 10; i++) {
+          await Future.delayed(const Duration(milliseconds: 100));
           if (!_isRefreshingToken) break;
         }
       }
@@ -598,8 +596,8 @@ class AuthService {
         print('OAuth callback handling already in progress, waiting...');
       }
       
-      for (int i = 0; i < 20; i++) {
-        await Future.delayed(Duration(milliseconds: 100));
+      for (var i = 0; i < 20; i++) {
+        await Future.delayed(const Duration(milliseconds: 100));
         if (!_isHandlingOAuthCallback) break;
       }
       
