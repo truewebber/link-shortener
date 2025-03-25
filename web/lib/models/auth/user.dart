@@ -18,7 +18,7 @@ class User {
         name: json['name']?.toString() ?? 'Unknown',
         email: json['email']?.toString() ?? 'no-email@example.com',
         avatarUrl: json['avatar_url']?.toString(),
-        provider: _providerFromString(json['provider']?.toString() ?? 'google'),
+        provider: _providerFromString(json['provider']?.toString() ?? 'unknown'),
       );
     } catch (e) {
       if (kDebugMode) {

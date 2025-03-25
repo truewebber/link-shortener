@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:link_shortener/models/auth/oauth_provider.dart';
 import 'package:link_shortener/models/auth/user.dart';
 import 'package:link_shortener/services/auth_service.dart';
 
@@ -42,6 +43,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _handleSignOut() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
     setState(() {
       _isLoading = true;
     });
@@ -62,16 +87,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
-        title: const Text('My Profile'),
+        title: const Text('Profile'),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sign Out',
-            onPressed: !_isLoading ? _handleSignOut : null,
-          ),
-        ],
       ),
       body: _buildBody(),
     );
@@ -135,101 +153,167 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 60,
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                backgroundImage: _user!.avatarUrl != null && _user!.avatarUrl!.isNotEmpty
-                    ? NetworkImage(_user!.avatarUrl!)
-                    : null,
-                child: _user!.avatarUrl == null || _user!.avatarUrl!.isEmpty
-                    ? Text(
-                        _user!.name.isNotEmpty ? _user!.name[0].toUpperCase() : '?',
-                        style: TextStyle(
-                          fontSize: 48,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
-                      )
-                    : null,
-              ),
-              const SizedBox(height: 24),
-              
-              Text(
-                _user!.name,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                _buildProfileCard(
+                  title: 'Account Information',
+                  icon: Icons.account_circle,
+                  children: [
+                    _buildInfoRow(
+                      icon: Icons.person,
+                      label: 'Name',
+                      value: _user!.name,
+                    ),
+                    _buildInfoRow(
+                      icon: Icons.email,
+                      label: 'Email',
+                      value: _user!.email,
+                    ),
+                    _buildInfoRow(
+                      icon: Icons.login,
+                      label: 'Sign In Method',
+                      value: _user!.provider.name,
+                      trailing: Icon(_user!.provider.icon),
+                    ),
+                  ],
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              
-              Text(
-                _user!.email,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.grey[600],
+                const SizedBox(height: 24),
+                _buildProfileCard(
+                  title: 'Quick Actions',
+                  icon: Icons.dashboard,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.link),
+                      title: const Text('My Links'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.of(context).pushNamed('/urls');
+                      },
+                    ),
+                    const Divider(),
+                    ListTile(
+                      leading: const Icon(Icons.notifications),
+                      title: const Text('Notifications'),
+                      trailing: Switch(
+                        value: true, // TODO: Implement notification preferences
+                        onChanged: (value) {
+                          // TODO: Handle notification toggle
+                        },
+                      ),
+                    ),
+                    const Divider(),
+                    ListTile(
+                      leading: const Icon(Icons.security),
+                      title: const Text('Security'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        // TODO: Navigate to security settings
+                      },
+                    ),
+                    const Divider(),
+                    ListTile(
+                      leading: const Icon(Icons.help),
+                      title: const Text('Help & Support'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        // TODO: Navigate to help center
+                      },
+                    ),
+                  ],
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              
-              Chip(
-                label: Text('Signed in with ${_providerName(_user!.provider)}'),
-                avatar: Icon(_providerIcon(_user!.provider)),
-                backgroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
-                labelStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _handleSignOut,
+                    icon: const Icon(Icons.logout),
+                    label: const Text('Sign Out'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                      side: BorderSide(color: Theme.of(context).colorScheme.error),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
                 ),
-              ),
-              
-              const SizedBox(height: 32),
-              const Divider(),
-              const SizedBox(height: 32),
-              
-              ElevatedButton.icon(
-                onPressed: _handleSignOut,
-                icon: const Icon(Icons.logout),
-                label: const Text('Sign Out'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  foregroundColor: Theme.of(context).colorScheme.onError,
-                  minimumSize: const Size(double.infinity, 48),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  String _providerName(provider) {
-    switch (provider) {
-      case 'google':
-        return 'Google';
-      case 'apple':
-        return 'Apple';
-      case 'github':
-        return 'GitHub';
-      default:
-        return 'Unknown';
-    }
-  }
+  Widget _buildProfileCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) => Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Icon(icon, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 0),
+          ...children,
+        ],
+      ),
+    );
 
-  IconData _providerIcon(provider) {
-    switch (provider) {
-      case 'google':
-        return Icons.g_mobiledata;
-      case 'apple':
-        return Icons.apple;
-      case 'github':
-        return Icons.code;
-      default:
-        return Icons.account_circle;
-    }
-  }
+  Widget _buildInfoRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    Widget? trailing,
+  }) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.grey[600]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ),
+          if (trailing != null) ...[
+            const SizedBox(width: 8),
+            trailing,
+          ],
+        ],
+      ),
+    );
 }

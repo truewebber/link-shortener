@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:link_shortener/models/auth/user_session.dart';
 import 'package:link_shortener/screens/profile_screen.dart';
-import 'package:link_shortener/screens/url_management_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
 
 class UserProfileHeader extends StatefulWidget {
@@ -23,9 +22,7 @@ class UserProfileHeader extends StatefulWidget {
 }
 
 class _UserProfileHeaderState extends State<UserProfileHeader> {
-  final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
-  bool _isMenuOpen = false;
 
   @override
   void dispose() {
@@ -36,136 +33,32 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
   void _removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-    _isMenuOpen = false;
-  }
-
-  void _showMenu(BuildContext context) {
-    if (_isMenuOpen) {
-      _removeOverlay();
-      return;
-    }
-
-    final button = context.findRenderObject() as RenderBox;
-    final offset = Offset(0, button.size.height + 8);
-
-    _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        width: 200,
-        child: CompositedTransformFollower(
-          link: _layerLink,
-          offset: offset,
-          child: Material(
-            elevation: 8,
-            borderRadius: BorderRadius.circular(8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildMenuItem(
-                  context,
-                  'Profile',
-                  Icons.person,
-                  onTap: () async {
-                    _removeOverlay();
-                    if (!mounted) return;
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ProfileScreen(),
-                      ),
-                    );
-                  },
-                ),
-                _buildMenuItem(
-                  context,
-                  'My URLs',
-                  Icons.link,
-                  onTap: () async {
-                    _removeOverlay();
-                    if (!mounted) return;
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const UrlManagementScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const Divider(height: 1),
-                _buildMenuItem(
-                  context,
-                  'Sign Out',
-                  Icons.logout,
-                  isDestructive: true,
-                  onTap: () async {
-                    _removeOverlay();
-                    if (!mounted) return;
-                    await _signOut();
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-    Overlay.of(context).insert(_overlayEntry!);
-    _isMenuOpen = true;
-  }
-
-  Widget _buildMenuItem(
-    BuildContext context,
-    String text,
-    IconData icon, {
-    required VoidCallback onTap,
-    bool isDestructive = false,
-  }) {
-    final color = isDestructive
-        ? Theme.of(context).colorScheme.error
-        : Theme.of(context).colorScheme.primary;
-
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 12),
-            Text(
-              text,
-              style: TextStyle(
-                color: isDestructive
-                    ? Theme.of(context).colorScheme.error
-                    : Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
-  Widget build(BuildContext context) => CompositedTransformTarget(
-      link: _layerLink,
-      child: GestureDetector(
-        onTap: () => _showMenu(context),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(
-            children: [
-              _buildAvatar(context),
-              const SizedBox(width: 8),
-              Text(
-                _getUserName(),
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const Icon(Icons.arrow_drop_down),
-            ],
+  Widget build(BuildContext context) => GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ProfileScreen(),
           ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            _buildAvatar(context),
+            const SizedBox(width: 8),
+            Text(
+              _getUserName(),
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+            ),
+          ],
         ),
       ),
     );
@@ -225,15 +118,6 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
       return parts.first.substring(0, 1).toUpperCase();
     } else {
       return (parts.first.substring(0, 1) + parts.last.substring(0, 1)).toUpperCase();
-    }
-  }
-
-  Future<void> _signOut() async {
-    try {
-      await widget.authService.signOut();
-      widget.onSignOutSuccess?.call();
-    } catch (e) {
-      widget.onSignOutError?.call(e.toString());
     }
   }
 }

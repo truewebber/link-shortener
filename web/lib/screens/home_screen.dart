@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:link_shortener/models/auth/user_session.dart';
 import 'package:link_shortener/screens/auth_screen.dart';
-import 'package:link_shortener/screens/profile_screen.dart';
+import 'package:link_shortener/screens/url_management_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
 import 'package:link_shortener/services/url_service.dart';
 import 'package:link_shortener/widgets/auth/user_profile_header.dart';
@@ -146,15 +146,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const ProfileScreen(),
+                  builder: (context) => const UrlManagementScreen(),
                 ),
               );
             },
-            child: const Text('Profile'),
+            icon: const Icon(Icons.link),
+            label: const Text('My Links'),
           ),
         ],
       ),

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 enum OAuthProvider {
   unknown,
   google,
@@ -19,18 +21,20 @@ extension OAuthProviderExtension on OAuthProvider {
     }
   }
   
-  String get iconPath {
+  IconData get icon {
     switch (this) {
       case OAuthProvider.google:
-        return 'assets/icons/google.png';
+        return Icons.g_mobiledata;
       case OAuthProvider.apple:
-        return 'assets/icons/apple.png';
+        return Icons.apple;
       case OAuthProvider.github:
-        return 'assets/icons/github.png';
-      case OAuthProvider.unknown:
-        throw UnimplementedError();
+        return Icons.code;
+      default:
+        return Icons.account_circle;
     }
   }
+
+
   
   String get backgroundColor {
     switch (this) {
