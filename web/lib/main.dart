@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:link_shortener/config/app_config.dart';
 import 'package:link_shortener/config/app_config_provider.dart';
 import 'package:link_shortener/models/auth/user_session.dart';
+import 'package:link_shortener/screens/auth_screen.dart';
 import 'package:link_shortener/screens/home_screen.dart';
+import 'package:link_shortener/screens/profile_screen.dart';
+import 'package:link_shortener/screens/url_management_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
 import 'package:link_shortener/services/url_service.dart';
 import 'package:link_shortener/utils/notification_utils.dart';
@@ -194,6 +197,11 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
           authService: widget.authService,
           urlService: widget.urlService,
         ),
+        routes: {
+          '/urls': (context) => const UrlManagementScreen(),
+          '/profile': (context) => const ProfileScreen(),
+          '/auth': (context) => const AuthScreen(),
+        },
         // onGenerateRoute: (settings) {
         //   if (kDebugMode) {
         //     print('onGenerateRoute: ${settings.name}');

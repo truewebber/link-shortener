@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:link_shortener/models/auth/user_session.dart';
-import 'package:link_shortener/screens/profile_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
 
 class UserProfileHeader extends StatefulWidget {
@@ -38,12 +37,7 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
   @override
   Widget build(BuildContext context) => GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const ProfileScreen(),
-          ),
-        );
+        Navigator.of(context).pushNamed('/profile');
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
