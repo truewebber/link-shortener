@@ -44,13 +44,15 @@ func NewRouterHandler(
 	)
 
 	// Protected auth endpoints
-	authRouter := router.PathPrefix("/api/auth").Subrouter()
+	authRouter := router.PathPrefix("/api").Subrouter()
 	authRouter.Use(middleware.Auth(authUser, logger))
-	authRouter.HandleFunc("/logout", authHandler.Logout).Methods(http.MethodPost)
-	authRouter.HandleFunc("/me", authHandler.Me).Methods(http.MethodGet)
+	authRouter.HandleFunc("/auth/logout", authHandler.Logout).Methods(http.MethodPost)
+	authRouter.HandleFunc("/auth/me", authHandler.Me).Methods(http.MethodGet)
+
+	authRouter.HandleFunc("/urls", linkHandler.CreateLink).Methods(http.MethodPost)
 
 	// URL shortening endpoint for public usage
-	router.HandleFunc("/api/restricted_urls", linkHandler.CreateLink).Methods(http.MethodPost)
+	router.HandleFunc("/api/restricted_urls", linkHandler.CreateAnonymousLink).Methods(http.MethodPost)
 
 	// Redirect handler for shortened URLs
 	router.HandleFunc("/{hash:[0-9a-zA-Z]+}", linkHandler.Redirect).Methods(http.MethodGet)

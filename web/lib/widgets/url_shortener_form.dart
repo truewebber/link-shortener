@@ -105,7 +105,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
       setState(() {
         _isLoading = false;
         _isSuccess = true;
-        _shortenedUrl = shortenedUrl.shortUrl;
+        _shortenedUrl = shortenedUrl;
       });
 
       await _animationController.forward();
@@ -130,34 +130,6 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
     });
 
     _animationController.reset();
-  }
-
-  String _ttlTitle(TTL ttl) {
-    switch (ttl) {
-      case TTL.threeMonths:
-        return '3 months';
-      case TTL.sixMonths:
-        return '6 months';
-      case TTL.twelveMonths:
-        return '12 months';
-      case TTL.never:
-        return 'never';
-    }
-  }
-
-  TTL _titleToTTL(String ttl) {
-    switch (ttl) {
-      case '3 months':
-        return TTL.threeMonths;
-      case '6 months':
-        return TTL.sixMonths;
-      case '12 months':
-        return TTL.twelveMonths;
-      case 'never':
-        return TTL.never;
-      default:
-        throw Exception('unknown TTL title');
-    }
   }
 
   Future<void> _copyToClipboard() async {
@@ -186,8 +158,8 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ),
-        DropdownButtonFormField<String>(
-          value: _ttlTitle(_selectedTtl),
+        DropdownButtonFormField<TTL>(
+          value: _selectedTtl,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -195,7 +167,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
           onChanged: (value) {
             if (value != null) {
               setState(() {
-                _selectedTtl = _titleToTTL(value);
+                _selectedTtl = value;
               });
             }
           },
@@ -204,11 +176,11 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
       ],
     );
 
-  List<DropdownMenuItem<String>> _getTTLDropdownElements() {
+  List<DropdownMenuItem<TTL>> _getTTLDropdownElements() {
     if (!widget.isAuthenticated) {
       return [
         const DropdownMenuItem(
-          value: '3m',
+          value: TTL.threeMonths,
           child: Text('3 months'),
         )
       ];
@@ -216,19 +188,19 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
 
     return [
       const DropdownMenuItem(
-        value: '3m',
+        value: TTL.threeMonths,
         child: Text('3 months'),
       ),
       const DropdownMenuItem(
-        value: '6m',
+        value: TTL.sixMonths,
         child: Text('6 months'),
       ),
       const DropdownMenuItem(
-        value: '12m',
+        value: TTL.twelveMonths,
         child: Text('12 months'),
       ),
       const DropdownMenuItem(
-        value: 'never',
+        value: TTL.never,
         child: Text('Never'),
       ),
     ];

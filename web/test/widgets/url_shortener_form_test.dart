@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:link_shortener/models/short_url.dart';
 import 'package:link_shortener/widgets/url_shortener_form.dart';
 import 'package:mockito/mockito.dart';
 
@@ -61,7 +60,7 @@ void main() {
     });
 
     testWidgets('shows loading state during URL shortening', (tester) async {
-      final completer = Completer<ShortUrl>();
+      final completer = Completer<String>();
       
       when(urlService.createShortUrl(
         url: anyNamed('url'),
@@ -84,12 +83,7 @@ void main() {
       expect(find.text('SHORTEN URL'), findsNothing);
 
       // Complete the future
-      completer.complete(ShortUrl(
-        originalUrl: 'https://example.com',
-        shortId: 'abc123',
-        shortUrl: 'https://short.url/abc123',
-        createdAt: DateTime.now(),
-      ));
+      completer.complete('https://short.url/abc123');
       await tester.pumpAndSettle();
     });
 
@@ -98,12 +92,7 @@ void main() {
         url: anyNamed('url'),
         context: anyNamed('context'),
         ttl: anyNamed('ttl'),
-      )).thenAnswer((_) => Future.value(ShortUrl(
-        originalUrl: 'https://example.com',
-        shortId: 'abc123',
-        shortUrl: 'https://short.url/abc123',
-        createdAt: DateTime.now(),
-      )));
+      )).thenAnswer((_) => Future.value('https://short.url/abc123'));
 
       await pumpUrlShortenerForm(tester);
 
@@ -145,12 +134,7 @@ void main() {
         url: anyNamed('url'),
         context: anyNamed('context'),
         ttl: anyNamed('ttl'),
-      )).thenAnswer((_) => Future.value(ShortUrl(
-        originalUrl: 'https://example.com',
-        shortId: 'abc123',
-        shortUrl: 'https://short.url/abc123',
-        createdAt: DateTime.now(),
-      )));
+      )).thenAnswer((_) => Future.value('https://short.url/abc123'));
       
       await pumpUrlShortenerForm(tester);
 

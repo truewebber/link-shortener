@@ -55,7 +55,7 @@ class MockUrlService extends _i1.Mock implements _i3.UrlService {
           as _i4.Future<String>);
 
   @override
-  _i4.Future<_i2.ShortUrl> createShortUrl({
+  _i4.Future<String> createShortUrl({
     _i6.BuildContext? context,
     required String? url,
     required _i7.TTL? ttl,
@@ -66,8 +66,8 @@ class MockUrlService extends _i1.Mock implements _i3.UrlService {
               #url: url,
               #ttl: ttl,
             }),
-            returnValue: _i4.Future<_i2.ShortUrl>.value(
-              _FakeShortUrl_0(
+            returnValue: _i4.Future<String>.value(
+              _i5.dummyValue<String>(
                 this,
                 Invocation.method(#createShortUrl, [], {
                   #context: context,
@@ -76,8 +76,8 @@ class MockUrlService extends _i1.Mock implements _i3.UrlService {
                 }),
               ),
             ),
-            returnValueForMissingStub: _i4.Future<_i2.ShortUrl>.value(
-              _FakeShortUrl_0(
+            returnValueForMissingStub: _i4.Future<String>.value(
+              _i5.dummyValue<String>(
                 this,
                 Invocation.method(#createShortUrl, [], {
                   #context: context,
@@ -87,7 +87,7 @@ class MockUrlService extends _i1.Mock implements _i3.UrlService {
               ),
             ),
           )
-          as _i4.Future<_i2.ShortUrl>);
+          as _i4.Future<String>);
 
   @override
   _i4.Future<List<_i2.ShortUrl>> getUserUrls({_i6.BuildContext? context}) =>

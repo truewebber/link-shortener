@@ -89,7 +89,7 @@ class UrlService {
     }
   }
 
-  Future<ShortUrl> createShortUrl({
+  Future<String> createShortUrl({
     BuildContext? context,
     required String url,
     required TTL ttl,
@@ -105,8 +105,8 @@ class UrlService {
       final headers = await _authService.getAuthHeaders(context: context);
 
       final payload = {
-        'originalUrl': url,
-        'ttl': ttl,
+        'url': url,
+        'ttl': _ttlRequestValue(ttl),
       };
 
       final response = await _client.post(
@@ -117,7 +117,7 @@ class UrlService {
       
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return ShortUrl.fromJson(data);
+        return data['short_url'] as String;
       } else {
         final errorMsg = _parseErrorMessage(response);
         throw Exception('non 200 status code: $errorMsg');
@@ -130,6 +130,19 @@ class UrlService {
       NotificationUtils.showError(context, 'Failed to create short URL');
 
       rethrow;
+    }
+  }
+
+  String _ttlRequestValue(TTL ttl) {
+    switch (ttl) {
+      case TTL.threeMonths:
+        return '3months';
+      case TTL.sixMonths:
+        return '6months';
+      case TTL.twelveMonths:
+        return '12months';
+      case TTL.never:
+        return 'never';
     }
   }
   
@@ -262,16 +275,6 @@ class UrlService {
   }
   
   String _parseErrorMessage(http.Response response) => response.body;
-
-  // void _checkUserAuthorized({BuildContext? context}) {
-  //   if (_authService.isAuthenticated) {
-  //     return;
-  //   }
-  //
-  //   NotificationUtils.showWarning(context, 'You have to be logged in');
-  //
-  //   throw Exception('User is not authenticated');
-  // }
 
   void dispose() {
     _client.close();
