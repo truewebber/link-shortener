@@ -548,32 +548,33 @@ class AuthService {
   }
 
   Future<Map<String, String>> getAuthHeaders({BuildContext? context}) async {
-    final headers = <String, String>{
-      'Content-Type': 'application/json',
-    };
+    if (!isAuthenticated) {
+      throw Exception('User is not authenticated');
+    }
 
-    if (isAuthenticated) {
-      if (_isRefreshingToken) {
-        if (kDebugMode) {
-          print('Waiting for token refresh to complete...');
-        }
-        
-        for (var i = 0; i < 10; i++) {
-          await Future.delayed(const Duration(milliseconds: 100));
-          if (!_isRefreshingToken) break;
-        }
-      }
-      
-      if (_isTokenExpiredOrCloseToExpiry() && !_isRefreshingToken) {
-        await refreshToken(context: context);
+    if (_isRefreshingToken) {
+      if (kDebugMode) {
+        print('Waiting for token refresh to complete...');
       }
 
-      if (isAuthenticated) {
-        headers['Authorization'] = 'Bearer ${_currentSession!.token}';
+      for (var i = 0; i < 10; i++) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (!_isRefreshingToken) break;
       }
     }
 
-    return headers;
+    if (_isTokenExpiredOrCloseToExpiry() && !_isRefreshingToken) {
+      await refreshToken(context: context);
+    }
+
+    if (!isAuthenticated) {
+      throw Exception('User is not authenticated');
+    }
+
+    return <String, String>{
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ${_currentSession!.token}'
+    };
   }
 
   void dispose() {

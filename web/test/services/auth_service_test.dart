@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/models/auth/oauth_provider.dart';
-import 'package:link_shortener/models/auth/user_session.dart';
 import 'package:link_shortener/models/auth/user.dart';
+import 'package:link_shortener/models/auth/user_session.dart';
 import 'package:mockito/mockito.dart';
 
 import '../mocks/auth_service.generate.mocks.dart';
@@ -23,7 +23,7 @@ void main() {
     });
 
     test('should authenticate with OAuth callback', () async {
-      final mockUser = User(
+      const mockUser = User(
         id: 1,
         name: 'Test User',
         email: 'test@example.com',
@@ -62,7 +62,7 @@ void main() {
     });
 
     test('should persist and load session', () async {
-      final mockUser = User(
+      const mockUser = User(
         id: 1,
         name: 'Test User',
         email: 'test@example.com',
@@ -97,7 +97,7 @@ void main() {
     });
 
     test('should refresh token', () async {
-      final mockUser = User(
+      const mockUser = User(
         id: 1,
         name: 'Test User',
         email: 'test@example.com',
@@ -150,7 +150,7 @@ void main() {
     });
 
     test('should emit auth state changes', () async {
-      final mockUser = User(
+      const mockUser = User(
         id: 1,
         name: 'Test User',
         email: 'test@example.com',

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:link_shortener/config/app_config.dart';
 import 'package:link_shortener/models/short_url.dart';
+import 'package:link_shortener/models/ttl.dart';
+import 'package:link_shortener/services/api_exception.dart';
 import 'package:link_shortener/services/auth_service.dart';
 import 'package:link_shortener/utils/notification_utils.dart';
 
@@ -17,48 +19,98 @@ class UrlService {
   final _client = http.Client();
   final _authService = AuthService();
 
-  Future<String> shortenUrl(String url) async {
+  String get _baseUrl => _config.apiBaseUrl;
+
+  Uri _buildUrl(String path) {
+    final cleanBase = _baseUrl.endsWith('/') ? _baseUrl.substring(0, _baseUrl.length - 1) : _baseUrl;
+    final cleanPath = path.startsWith('/') ? path.substring(1) : path;
+
+    return Uri.parse('$cleanBase/$cleanPath');
+  }
+
+  Future<String> shortenRestrictedUrl(String url) async {
+    final requestUrl = _buildUrl('/api/restricted_urls');
+
+    if (kDebugMode) {
+      print('Shorten restricted URL: $url');
+      print('API endpoint: ${requestUrl.toString()}');
+    }
+
     try {
       final response = await _client.post(
-        Uri.parse('${_config.apiBaseUrl}/api/restricted_urls'),
+        requestUrl,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'url': url}),
-      );
-      
+      ).timeout(const Duration(seconds: 10));
+
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body);
+        if (kDebugMode) {
+          print('Successfully shortened URL: ${data['short_url']}');
+        }
         return data['short_url'] as String;
       } else {
-        final errorMsg = _parseErrorMessage(response);
-        throw Exception('Failed to shorten URL: $errorMsg');
+        var errorMessage = 'Failed to shorten URL';
+
+        try {
+          final errorData = jsonDecode(response.body);
+          if (errorData['message'] != null) {
+            errorMessage = errorData['message'];
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('Could not parse error response: $e');
+          }
+        }
+
+        if (kDebugMode) {
+          print('API error: $errorMessage (${response.statusCode})');
+        }
+        throw ApiException(errorMessage, statusCode: response.statusCode);
       }
-    } catch (e) {
+    } on http.ClientException catch (e) {
+      final message = 'Network error: ${e.message}';
       if (kDebugMode) {
-        print('Error shortening URL: $e');
+        print(message);
       }
-      rethrow;
+      throw ApiException(message);
+    } on FormatException catch (e) {
+      final message = 'Invalid response format from server: ${e.message}';
+      if (kDebugMode) {
+        print(message);
+      }
+      throw ApiException(message);
+    } on Exception catch (e) {
+      final message = 'Error: ${e.toString()}';
+      if (kDebugMode) {
+        print(message);
+      }
+      throw ApiException(message);
     }
   }
 
   Future<ShortUrl> createShortUrl({
-    required String originalUrl,
-    String? customAlias,
-    DateTime? expiresAt,
     BuildContext? context,
+    required String url,
+    required TTL ttl,
   }) async {
-    _checkUserAuthorized(context: context);
+    final requestUrl = _buildUrl('/api/urls');
+
+    if (kDebugMode) {
+      print('Shorten URL: $url, ttl: ');
+      print('API endpoint: ${requestUrl.toString()}');
+    }
 
     try {
       final headers = await _authService.getAuthHeaders(context: context);
-      
+
       final payload = {
-        'originalUrl': originalUrl,
-        if (customAlias != null && customAlias.isNotEmpty) 'customAlias': customAlias,
-        if (expiresAt != null) 'expiresAt': expiresAt.toIso8601String(),
+        'originalUrl': url,
+        'ttl': ttl,
       };
-      
+
       final response = await _client.post(
-        Uri.parse('${_config.apiBaseUrl}/api/urls'),
+        requestUrl,
         headers: headers,
         body: jsonEncode(payload),
       );
@@ -82,13 +134,17 @@ class UrlService {
   }
   
   Future<List<ShortUrl>> getUserUrls({BuildContext? context}) async {
-    _checkUserAuthorized(context: context);
-    
+    final requestUrl = _buildUrl('/api/urls');
+
+    if (kDebugMode) {
+      print('API endpoint: ${requestUrl.toString()}');
+    }
+
     try {
       final headers = await _authService.getAuthHeaders(context: context);
       
       final response = await _client.get(
-        Uri.parse('${_config.apiBaseUrl}/api/urls'),
+        requestUrl,
         headers: headers,
       );
       
@@ -111,8 +167,6 @@ class UrlService {
   }
 
   Future<ShortUrl> getUrlDetails(String shortId, {BuildContext? context}) async {
-    _checkUserAuthorized(context: context);
-
     try {
       final headers = await _authService.getAuthHeaders(context: context);
       
@@ -140,8 +194,6 @@ class UrlService {
   }
 
   Future<bool> deleteUrl(String shortId, {BuildContext? context}) async {
-    _checkUserAuthorized(context: context);
-    
     try {
       final headers = await _authService.getAuthHeaders(context: context);
       
@@ -175,8 +227,6 @@ class UrlService {
     DateTime? expiresAt,
     BuildContext? context,
   }) async {
-    _checkUserAuthorized(context: context);
-    
     try {
       final headers = await _authService.getAuthHeaders(context: context);
       
@@ -213,15 +263,15 @@ class UrlService {
   
   String _parseErrorMessage(http.Response response) => response.body;
 
-  void _checkUserAuthorized({BuildContext? context}) {
-    if (_authService.isAuthenticated) {
-      return;
-    }
-
-    NotificationUtils.showWarning(context, 'To list your short URL you have to be logged in');
-
-    throw Exception('User is not authenticated');
-  }
+  // void _checkUserAuthorized({BuildContext? context}) {
+  //   if (_authService.isAuthenticated) {
+  //     return;
+  //   }
+  //
+  //   NotificationUtils.showWarning(context, 'You have to be logged in');
+  //
+  //   throw Exception('User is not authenticated');
+  // }
 
   void dispose() {
     _client.close();

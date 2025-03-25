@@ -7,6 +7,7 @@ import 'dart:async' as _i4;
 
 import 'package:flutter/material.dart' as _i6;
 import 'package:link_shortener/models/short_url.dart' as _i2;
+import 'package:link_shortener/models/ttl.dart' as _i7;
 import 'package:link_shortener/services/url_service.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;
@@ -35,19 +36,19 @@ class _FakeShortUrl_0 extends _i1.SmartFake implements _i2.ShortUrl {
 /// See the documentation for Mockito's code generation for more information.
 class MockUrlService extends _i1.Mock implements _i3.UrlService {
   @override
-  _i4.Future<String> shortenUrl(String? url) =>
+  _i4.Future<String> shortenRestrictedUrl(String? url) =>
       (super.noSuchMethod(
-            Invocation.method(#shortenUrl, [url]),
+            Invocation.method(#shortenRestrictedUrl, [url]),
             returnValue: _i4.Future<String>.value(
               _i5.dummyValue<String>(
                 this,
-                Invocation.method(#shortenUrl, [url]),
+                Invocation.method(#shortenRestrictedUrl, [url]),
               ),
             ),
             returnValueForMissingStub: _i4.Future<String>.value(
               _i5.dummyValue<String>(
                 this,
-                Invocation.method(#shortenUrl, [url]),
+                Invocation.method(#shortenRestrictedUrl, [url]),
               ),
             ),
           )
@@ -55,26 +56,23 @@ class MockUrlService extends _i1.Mock implements _i3.UrlService {
 
   @override
   _i4.Future<_i2.ShortUrl> createShortUrl({
-    required String? originalUrl,
-    String? customAlias,
-    DateTime? expiresAt,
     _i6.BuildContext? context,
+    required String? url,
+    required _i7.TTL? ttl,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#createShortUrl, [], {
-              #originalUrl: originalUrl,
-              #customAlias: customAlias,
-              #expiresAt: expiresAt,
               #context: context,
+              #url: url,
+              #ttl: ttl,
             }),
             returnValue: _i4.Future<_i2.ShortUrl>.value(
               _FakeShortUrl_0(
                 this,
                 Invocation.method(#createShortUrl, [], {
-                  #originalUrl: originalUrl,
-                  #customAlias: customAlias,
-                  #expiresAt: expiresAt,
                   #context: context,
+                  #url: url,
+                  #ttl: ttl,
                 }),
               ),
             ),
@@ -82,10 +80,9 @@ class MockUrlService extends _i1.Mock implements _i3.UrlService {
               _FakeShortUrl_0(
                 this,
                 Invocation.method(#createShortUrl, [], {
-                  #originalUrl: originalUrl,
-                  #customAlias: customAlias,
-                  #expiresAt: expiresAt,
                   #context: context,
+                  #url: url,
+                  #ttl: ttl,
                 }),
               ),
             ),

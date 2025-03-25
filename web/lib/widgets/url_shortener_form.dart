@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:link_shortener/models/ttl.dart';
 import 'package:link_shortener/services/url_service.dart';
 
 class UrlShortenerForm extends StatefulWidget {
@@ -12,7 +13,7 @@ class UrlShortenerForm extends StatefulWidget {
   });
 
   final bool isAuthenticated;
-  
+
   final UrlService? urlService;
 
   @override
@@ -28,8 +29,8 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
   String? _errorMessage;
   bool _isValidUrl = false;
   late final UrlService _urlService;
-  
-  String _selectedTtl = '3m';
+
+  TTL _selectedTtl = TTL.threeMonths;
 
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -37,24 +38,24 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    
+
     _urlService = widget.urlService ?? UrlService();
-    
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    
+
     _scaleAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: Curves.easeInOut,
       ),
     );
-    
+
     _urlController.addListener(_onUrlChanged);
   }
-  
+
   void _onUrlChanged() {
     final url = _urlController.text.trim();
     if (url.isEmpty) {
@@ -63,7 +64,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
       });
       return;
     }
-    
+
     try {
       final uri = Uri.parse(url);
       setState(() {
@@ -84,27 +85,29 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
     ..dispose();
     super.dispose();
   }
-  
+
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
-    
+
     try {
       final url = _urlController.text.trim();
-      final shortenedUrl = await _urlService.shortenUrl(url);
-      
+      final shortenedUrl = await _urlService.createShortUrl(
+          context: context, url: url, ttl: _selectedTtl,
+      );
+
       setState(() {
         _isLoading = false;
         _isSuccess = true;
-        _shortenedUrl = shortenedUrl;
+        _shortenedUrl = shortenedUrl.shortUrl;
       });
-      
+
       await _animationController.forward();
     } catch (e) {
       setState(() {
@@ -113,26 +116,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
       });
     }
   }
-  
-  DateTime? _getExpirationDate() {
-    if (!widget.isAuthenticated) {
-      return DateTime.now().add(const Duration(days: 91));
-    }
-    
-    switch (_selectedTtl) {
-      case 'never':
-        return null;
-      case '3m':
-        return DateTime.now().add(const Duration(days: 91));
-      case '6m':
-        return DateTime.now().add(const Duration(days: 183));
-      case '12m':
-        return DateTime.now().add(const Duration(days: 365));
-    }
 
-    return null;
-  }
-  
   /// Reset the form to initial state
   void _resetForm() {
     setState(() {
@@ -142,15 +126,43 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
       _errorMessage = null;
       _urlController.clear();
       _isValidUrl = false;
-      _selectedTtl = '3m';
+      _selectedTtl = TTL.threeMonths;
     });
 
     _animationController.reset();
   }
-  
+
+  String _ttlTitle(TTL ttl) {
+    switch (ttl) {
+      case TTL.threeMonths:
+        return '3 months';
+      case TTL.sixMonths:
+        return '6 months';
+      case TTL.twelveMonths:
+        return '12 months';
+      case TTL.never:
+        return 'never';
+    }
+  }
+
+  TTL _titleToTTL(String ttl) {
+    switch (ttl) {
+      case '3 months':
+        return TTL.threeMonths;
+      case '6 months':
+        return TTL.sixMonths;
+      case '12 months':
+        return TTL.twelveMonths;
+      case 'never':
+        return TTL.never;
+      default:
+        throw Exception('unknown TTL title');
+    }
+  }
+
   Future<void> _copyToClipboard() async {
     if (_shortenedUrl == null) return;
-    
+
     await Clipboard.setData(ClipboardData(text: _shortenedUrl!));
     if (mounted) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -163,21 +175,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
       );
     }
   }
-  
-  String _formatDuration(Duration duration) {
-    if (duration.inHours < 24) {
-      return '${duration.inHours} hours';
-    } else if (duration.inDays < 30) {
-      return '${duration.inDays} days';
-    } else if (duration.inDays < 365) {
-      final months = (duration.inDays / 30).round();
-      return '$months months';
-    } else {
-      final years = (duration.inDays / 365).round();
-      return '$years years';
-    }
-  }
-  
+
   Widget _buildTtlOptions() => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -189,7 +187,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
           ),
         ),
         DropdownButtonFormField<String>(
-          value: _selectedTtl,
+          value: _ttlTitle(_selectedTtl),
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -197,7 +195,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
           onChanged: (value) {
             if (value != null) {
               setState(() {
-                _selectedTtl = value;
+                _selectedTtl = _titleToTTL(value);
               });
             }
           },
@@ -306,7 +304,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
         ),
       ),
     );
-  
+
   Widget _buildSuccessView() => Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -333,11 +331,11 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
                   ),
                   textAlign: TextAlign.center,
                 ),
-                if (_selectedTtl != 'never')
+                if (_selectedTtl != TTL.never)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      'Link expires in: ${_formatDuration(_getExpirationDate()!.difference(DateTime.now()))}',
+                      'Link expires in: $_selectedTtl',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
@@ -374,7 +372,7 @@ class _UrlShortenerFormState extends State<UrlShortenerForm> with SingleTickerPr
             ),
           ),
         ),
-        
+
         Padding(
           padding: const EdgeInsets.only(top: 24),
           child: OutlinedButton(

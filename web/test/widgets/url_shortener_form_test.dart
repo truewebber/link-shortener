@@ -61,7 +61,7 @@ void main() {
 
     testWidgets('shows loading state during URL shortening', (tester) async {
       final completer = Completer<String>();
-      when(urlService.shortenUrl('https://example.com'))
+      when(urlService.shortenRestrictedUrl('https://example.com'))
           .thenAnswer((_) => completer.future);
 
       await pumpUrlShortenerForm(tester);
@@ -84,7 +84,7 @@ void main() {
     });
 
     testWidgets('displays shortened URL with copy button', (tester) async {
-      when(urlService.shortenUrl('https://example.com'))
+      when(urlService.shortenRestrictedUrl('https://example.com'))
           .thenAnswer((_) => Future.value('https://short.url/abc123'));
 
       await pumpUrlShortenerForm(tester);
@@ -103,7 +103,7 @@ void main() {
     });
 
     testWidgets('shows error message for failed URL shortening', (tester) async {
-      when(urlService.shortenUrl('https://example.com'))
+      when(urlService.shortenRestrictedUrl('https://example.com'))
           .thenThrow(Exception('Failed to shorten URL'));
 
       await pumpUrlShortenerForm(tester);
@@ -120,7 +120,7 @@ void main() {
     });
 
     testWidgets('maintains responsive layout across different screen sizes', (tester) async {
-      when(urlService.shortenUrl('https://example.com'))
+      when(urlService.shortenRestrictedUrl('https://example.com'))
           .thenAnswer((_) => Future.value('https://short.url/abc123'));
       
       await pumpUrlShortenerForm(tester);

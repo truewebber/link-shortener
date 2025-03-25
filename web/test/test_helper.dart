@@ -3,18 +3,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
 import 'package:link_shortener/config/app_config_provider.dart';
-import 'package:link_shortener/services/api_service.dart';
 import 'package:link_shortener/services/auth_service.dart';
 import 'package:link_shortener/services/url_service.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
-
 import 'mocks/app_config.generate.mocks.dart';
-
-@GenerateMocks([http.Client])
-class MockApiService extends Mock implements ApiService {}
 
 // Use the MockAppConfig instead of extending AppConfig
 typedef TestAppConfig = MockAppConfig;
