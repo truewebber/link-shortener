@@ -4,102 +4,176 @@ import 'package:link_shortener/screens/profile_screen.dart';
 import 'package:link_shortener/screens/url_management_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
 
-class UserProfileHeader extends StatelessWidget {
+class UserProfileHeader extends StatefulWidget {
   const UserProfileHeader({
     super.key,
     required this.userSession,
+    required this.authService,
+    this.onSignOutSuccess,
+    this.onSignOutError,
   });
 
   final UserSession userSession;
+  final AuthService authService;
+  final VoidCallback? onSignOutSuccess;
+  final void Function(String error)? onSignOutError;
 
   @override
-  Widget build(BuildContext context) => PopupMenuButton<String>(
-      offset: const Offset(0, 48),
+  State<UserProfileHeader> createState() => _UserProfileHeaderState();
+}
+
+class _UserProfileHeaderState extends State<UserProfileHeader> {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+  bool _isMenuOpen = false;
+
+  @override
+  void dispose() {
+    _removeOverlay();
+    super.dispose();
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    _isMenuOpen = false;
+  }
+
+  void _showMenu(BuildContext context) {
+    if (_isMenuOpen) {
+      _removeOverlay();
+      return;
+    }
+
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final Offset offset = Offset(0, button.size.height + 8);
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        width: 200,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          offset: offset,
+          child: Material(
+            elevation: 8,
+            borderRadius: BorderRadius.circular(8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildMenuItem(
+                  context,
+                  'Profile',
+                  Icons.person,
+                  onTap: () async {
+                    _removeOverlay();
+                    if (!mounted) return;
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ProfileScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuItem(
+                  context,
+                  'My URLs',
+                  Icons.link,
+                  onTap: () async {
+                    _removeOverlay();
+                    if (!mounted) return;
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UrlManagementScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                _buildMenuItem(
+                  context,
+                  'Sign Out',
+                  Icons.logout,
+                  isDestructive: true,
+                  onTap: () async {
+                    _removeOverlay();
+                    if (!mounted) return;
+                    await _signOut();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+    _isMenuOpen = true;
+  }
+
+  Widget _buildMenuItem(
+    BuildContext context,
+    String text,
+    IconData icon, {
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    final color = isDestructive
+        ? Theme.of(context).colorScheme.error
+        : Theme.of(context).colorScheme.primary;
+
+    return InkWell(
+      onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            _buildAvatar(context),
-            const SizedBox(width: 8),
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 12),
             Text(
-              _getUserName(),
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              text,
+              style: TextStyle(
+                color: isDestructive
+                    ? Theme.of(context).colorScheme.error
+                    : Theme.of(context).colorScheme.onSurface,
+              ),
             ),
-            const Icon(Icons.arrow_drop_down),
           ],
         ),
       ),
-      itemBuilder: (context) => [
-        PopupMenuItem<String>(
-          value: 'profile',
-          child: Row(
-            children: [
-              Icon(
-                Icons.person,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(width: 8),
-              const Text('Profile'),
-            ],
-          ),
-        ),
-        PopupMenuItem<String>(
-          value: 'urls',
-          child: Row(
-            children: [
-              Icon(
-                Icons.link,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(width: 8),
-              const Text('My URLs'),
-            ],
-          ),
-        ),
-        const PopupMenuDivider(),
-        PopupMenuItem<String>(
-          value: 'signout',
-          child: Row(
-            children: [
-              Icon(
-                Icons.logout,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              const SizedBox(width: 8),
-              const Text('Sign Out'),
-            ],
-          ),
-        ),
-      ],
-      onSelected: (value) {
-        switch (value) {
-          case 'profile':
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ProfileScreen(),
-              ),
-            );
-            break;
-          case 'urls':
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const UrlManagementScreen(),
-              ),
-            );
-            break;
-          case 'signout':
-            _signOut(context);
-            break;
-        }
-      },
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: GestureDetector(
+        onTap: () => _showMenu(context),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            children: [
+              _buildAvatar(context),
+              const SizedBox(width: 8),
+              Text(
+                _getUserName(),
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const Icon(Icons.arrow_drop_down),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildAvatar(BuildContext context) {
-    final user = userSession.user;
+    final user = widget.userSession.user;
 
     if (user != null && user.avatarUrl != null && user.avatarUrl!.isNotEmpty) {
       return CircleAvatar(
@@ -125,7 +199,7 @@ class UserProfileHeader extends StatelessWidget {
   }
 
   String _getUserName() {
-    final user = userSession.user;
+    final user = widget.userSession.user;
     if (user == null) {
       return 'User';
     }
@@ -133,7 +207,7 @@ class UserProfileHeader extends StatelessWidget {
   }
 
   String _getUserInitials() {
-    final user = userSession.user;
+    final user = widget.userSession.user;
     if (user == null) {
       return 'U';
     }
@@ -156,17 +230,12 @@ class UserProfileHeader extends StatelessWidget {
     }
   }
 
-  Future<void> _signOut(BuildContext context) async {
-    final authService = AuthService();
-    await authService.signOut();
-    
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You have been signed out.'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+  Future<void> _signOut() async {
+    try {
+      await widget.authService.signOut();
+      widget.onSignOutSuccess?.call();
+    } catch (e) {
+      widget.onSignOutError?.call(e.toString());
     }
   }
 }

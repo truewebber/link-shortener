@@ -77,31 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Link Shortener'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        actions: [
-          if (_userSession != null)
-            UserProfileHeader(
-              userSession: _userSession!,
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: ElevatedButton(
-                onPressed: _navigateToAuth,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Theme.of(context).colorScheme.primary,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                ),
-                child: const Text('Sign In'),
-              ),
-            ),
-        ],
-      ),
+      appBar: _buildAppBar(context),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -283,6 +259,50 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+
+  PreferredSizeWidget _buildAppBar(BuildContext context) => AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        title: const Text('Link Shortener'),
+        actions: [
+          if (_userSession != null)
+            UserProfileHeader(
+              userSession: _userSession!,
+              authService: _authService,
+              onSignOutSuccess: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('You have been signed out.'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              onSignOutError: (error) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to sign out: $error'),
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              },
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: ElevatedButton(
+                onPressed: _navigateToAuth,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                child: const Text('Sign In'),
+              ),
+            ),
+        ],
+      );
 
   void _navigateToAuth() {
     Navigator.of(context).push(
