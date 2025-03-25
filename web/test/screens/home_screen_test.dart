@@ -6,6 +6,7 @@ import 'package:link_shortener/models/auth/user_session.dart';
 import 'package:link_shortener/screens/auth_screen.dart';
 import 'package:link_shortener/screens/home_screen.dart';
 import 'package:link_shortener/screens/profile_screen.dart';
+import 'package:link_shortener/screens/url_management_screen.dart';
 import 'package:link_shortener/widgets/feature_section.dart';
 import 'package:link_shortener/widgets/url_shortener_form.dart';
 import 'package:mockito/mockito.dart';
@@ -50,13 +51,21 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        routes: {
+          '/auth': (context) => const AuthScreen(),
+          '/urls': (context) => UrlManagementScreen(
+            authService: testAuthService,
+            urlService: testUrlService,
+          ),
+          '/profile': (context) => const ProfileScreen(),
+        },
         home: HomeScreen(
           authService: testAuthService,
           urlService: testUrlService,
         ),
       ),
     );
-    await tester.pump();
+    await tester.pumpAndSettle();
   }
   
   group('HomeScreen', () {
@@ -66,7 +75,7 @@ void main() {
       // Verify authenticated user content
       expect(find.text('Welcome back, Test User!'), findsOneWidget);
       expect(find.text('You now have access to additional features including custom expiration times and link management.'), findsOneWidget);
-      expect(find.text('Profile'), findsOneWidget);
+      expect(find.text('My Links'), findsOneWidget);
     });
 
     testWidgets('should show content for anonymous users', (tester) async {
@@ -88,15 +97,21 @@ void main() {
       expect(find.byType(AuthScreen), findsOneWidget);
     });
 
-    testWidgets('should handle navigation to profile screen', (tester) async {
+    testWidgets('should handle navigation to URL management screen', (tester) async {
       await pumpHomeScreen(tester, isAuthenticated: true);
 
-      // Tap profile button
-      await tester.tap(find.text('Profile'));
+      // Mock URL service to return empty list
+      when(testUrlService.getUserUrls(context: anyNamed('context')))
+          .thenAnswer((_) => Future.value([]));
+
+      // Tap My Links button
+      await tester.tap(find.text('My Links'));
       await tester.pumpAndSettle();
 
-      // Verify navigation to profile screen
-      expect(find.byType(ProfileScreen), findsOneWidget);
+      // Verify navigation to URL management screen
+      expect(find.byType(HomeScreen), findsNothing);
+      expect(find.byType(UrlManagementScreen), findsOneWidget);
+      expect(find.text('My URLs'), findsOneWidget);
     });
 
     testWidgets('should display feature section', (tester) async {

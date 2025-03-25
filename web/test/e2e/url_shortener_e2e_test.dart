@@ -43,7 +43,7 @@ void main() {
       expect(find.text('Link Shortener'), findsOneWidget);
       expect(find.byType(HomeScreen), findsOneWidget);
       expect(find.byType(TextFormField), findsOneWidget);
-      expect(find.text('SHORTEN URL'), findsOneWidget);
+      expect(find.text('Shorten URL'), findsOneWidget);
       
       // Verify anonymous user notice
       expect(
@@ -83,7 +83,7 @@ void main() {
       // Finding widgets in different sizes should still work
       expect(find.byType(AppBar), findsOneWidget);
       expect(find.byType(TextFormField), findsOneWidget);
-      expect(find.text('SHORTEN URL'), findsOneWidget);
+      expect(find.text('Shorten URL'), findsOneWidget);
     });
 
     testWidgets('shows features section', (tester) async {

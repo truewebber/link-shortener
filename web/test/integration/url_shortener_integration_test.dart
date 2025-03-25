@@ -34,6 +34,7 @@ void main() {
           urlService: testUrlService,
         ),
       );
+      await tester.pumpAndSettle();
       
       // Verify app title
       expect(find.text('Link Shortener'), findsOneWidget);
@@ -42,7 +43,7 @@ void main() {
       expect(find.byType(TextFormField), findsOneWidget);
       
       // Verify shorten button is present
-      expect(find.text('SHORTEN URL'), findsOneWidget);
+      expect(find.text('Shorten URL'), findsOneWidget);
       
       // Verify anonymous user notice
       expect(
@@ -59,6 +60,7 @@ void main() {
           urlService: testUrlService,
         ),
       );
+      await tester.pumpAndSettle();
       
       // Verify features section
       expect(find.text('Features'), findsOneWidget);
@@ -77,6 +79,7 @@ void main() {
           urlService: testUrlService,
         ),
       );
+      await tester.pumpAndSettle();
       
       // Test desktop size
       await tester.binding.setSurfaceSize(const Size(1200, 800));

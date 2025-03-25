@@ -33,6 +33,7 @@ void main() {
         authService: testAuthService,
         urlService: testUrlService,
       ));
+      await tester.pumpAndSettle();
       
       // Verify app title is in AppBar
       expect(find.text('Link Shortener'), findsOneWidget);
@@ -51,6 +52,7 @@ void main() {
         authService: testAuthService,
         urlService: testUrlService,
       ));
+      await tester.pumpAndSettle();
       
       // Verify initial theme
       final initialTheme = Theme.of(tester.element(find.byType(MaterialApp)));
@@ -71,6 +73,7 @@ void main() {
         authService: testAuthService,
         urlService: testUrlService,
       ));
+      await tester.pumpAndSettle();
       
       // Test desktop layout (>900px)
       await tester.binding.setSurfaceSize(const Size(1000, 800));
@@ -93,6 +96,7 @@ void main() {
         authService: testAuthService,
         urlService: testUrlService,
       ));
+      await tester.pumpAndSettle();
       
       // Verify initial route
       expect(find.byType(HomeScreen), findsOneWidget);
@@ -104,6 +108,7 @@ void main() {
         authService: testAuthService,
         urlService: testUrlService,
       ));
+      await tester.pumpAndSettle();
       
       // Verify initial state
       expect(find.byType(HomeScreen), findsOneWidget);
@@ -122,6 +127,7 @@ void main() {
         authService: testAuthService,
         urlService: testUrlService,
       ));
+      await tester.pumpAndSettle();
       
       // Verify text styles
       expect(find.text('Link Shortener'), findsOneWidget);
@@ -139,6 +145,7 @@ void main() {
         authService: testAuthService,
         urlService: testUrlService,
       ));
+      await tester.pumpAndSettle();
       
       // Test portrait orientation
       await tester.binding.setSurfaceSize(const Size(400, 800));
@@ -161,9 +168,10 @@ void main() {
         authService: testAuthService,
         urlService: testUrlService,
       ));
+      await tester.pumpAndSettle();
       
       // Check if the shorten URL button is present
-      expect(find.text('SHORTEN URL'), findsOneWidget);
+      expect(find.text('Shorten URL'), findsOneWidget);
     });
   });
 }

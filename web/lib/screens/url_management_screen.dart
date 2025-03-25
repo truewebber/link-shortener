@@ -6,15 +6,22 @@ import 'package:link_shortener/services/auth_service.dart';
 import 'package:link_shortener/services/url_service.dart';
 
 class UrlManagementScreen extends StatefulWidget {
-  const UrlManagementScreen({super.key});
+  const UrlManagementScreen({
+    super.key,
+    this.authService,
+    this.urlService,
+  });
+
+  final AuthService? authService;
+  final UrlService? urlService;
 
   @override
   State<UrlManagementScreen> createState() => _UrlManagementScreenState();
 }
 
 class _UrlManagementScreenState extends State<UrlManagementScreen> {
-  final _urlService = UrlService();
-  final _authService = AuthService();
+  late final UrlService _urlService;
+  late final AuthService _authService;
   
   List<ShortUrl>? _urls;
   bool _isLoading = true;
@@ -23,12 +30,18 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
   @override
   void initState() {
     super.initState();
+    _urlService = widget.urlService ?? UrlService();
+    _authService = widget.authService ?? AuthService();
+    _isLoading = true;
     _loadUrls();
   }
   
   Future<void> _loadUrls() async {
     if (!_authService.isAuthenticated) {
-      Navigator.of(context).pop();
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Please sign in to view your URLs';
+      });
       return;
     }
     
@@ -38,7 +51,7 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
     });
     
     try {
-      final urls = await _urlService.getUserUrls();
+      final urls = await _urlService.getUserUrls(context: context);
       setState(() {
         _urls = urls;
         _isLoading = false;
@@ -60,7 +73,7 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
         _isLoading = true;
       });
       
-      await _urlService.deleteUrl(url.shortId);
+      await _urlService.deleteUrl(url.shortId, context: context);
       
       setState(() {
         _urls?.removeWhere((item) => item.shortId == url.shortId);
@@ -100,6 +113,7 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
           duration: Duration(seconds: 2),
         ),
       );
+      await Future.delayed(Duration.zero);
     }
   }
   
@@ -108,8 +122,7 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Delete URL'),
         content: Text(
-          'Are you sure you want to delete the shortened URL for "${_truncateUrl(url.originalUrl)}"?\n\n'
-          'This action cannot be undone.'
+          'Are you sure you want to delete the shortened URL for "${url.originalUrl}"?'
         ),
         actions: [
           TextButton(
@@ -153,7 +166,7 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'You haven\'t created any shortened URLs yet.',
+              'Create your first shortened URL',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -206,57 +219,30 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
                         tooltip: 'Copy URL',
                         onPressed: () => _copyToClipboard(url.shortUrl),
                       ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        tooltip: 'Delete URL',
+                        onPressed: () => _deleteUrl(url),
+                      ),
                     ],
                   ),
                   
                   const SizedBox(height: 8),
                   
-                  Wrap(
-                    spacing: 16,
-                    children: [
-                      Text(
-                        'Created: ${_formatDate(url.createdAt)}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      
-                      if (url.expiresAt != null)
-                        Text(
-                          'Expires: ${_formatDate(url.expiresAt!)}',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: isExpired 
-                              ? Colors.red 
-                              : Theme.of(context).textTheme.bodySmall?.color,
-                          ),
-                        ),
-                      
-                      Text(
-                        'Clicks: ${url.clickCount}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      OutlinedButton.icon(
-                        onPressed: () => _deleteUrl(url),
-                        icon: Icon(
-                          Icons.delete_outline,
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                        label: Text(
-                          'Delete',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            color: Theme.of(context).colorScheme.error.withAlpha(128),
-                          ),
+                      Icon(
+                        Icons.access_time,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        url.expiresAt != null
+                          ? 'Expires ${_formatDate(url.expiresAt!)}'
+                          : 'Never expires',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -269,56 +255,71 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
       ),
     );
   
-  Widget _buildErrorState() => Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red.shade400,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Error',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _errorMessage ?? 'An unknown error occurred',
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _loadUrls,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-            ),
-          ],
-        ),
-      ),
-    );
-
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) {
+    if (!_authService.isAuthenticated) {
+      return Scaffold(
+        body: Center(
+          child: Text(
+            'Please sign in to view your URLs',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+      );
+    }
+
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('My URLs'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('My URLs'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _errorMessage!,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.red,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadUrls,
+                child: const Text('Try Again'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_urls == null || _urls!.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('My URLs'),
+        ),
+        body: _buildEmptyState(),
+      );
+    }
+
+    return Scaffold(
       appBar: AppBar(
         title: const Text('My URLs'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
-            onPressed: _loadUrls,
-          ),
-        ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? _buildErrorState()
-              : _urls == null || _urls!.isEmpty
-                  ? _buildEmptyState()
-                  : _buildUrlList(),
+      body: _buildUrlList(),
     );
+  }
 }
