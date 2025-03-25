@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:link_shortener/models/short_url.dart';
 import 'package:link_shortener/widgets/url_shortener_form.dart';
 import 'package:mockito/mockito.dart';
 
@@ -60,9 +61,13 @@ void main() {
     });
 
     testWidgets('shows loading state during URL shortening', (tester) async {
-      final completer = Completer<String>();
-      when(urlService.shortenRestrictedUrl('https://example.com'))
-          .thenAnswer((_) => completer.future);
+      final completer = Completer<ShortUrl>();
+      
+      when(urlService.createShortUrl(
+        url: anyNamed('url'),
+        context: anyNamed('context'),
+        ttl: anyNamed('ttl'),
+      )).thenAnswer((_) => completer.future);
 
       await pumpUrlShortenerForm(tester);
 
@@ -79,13 +84,26 @@ void main() {
       expect(find.text('SHORTEN URL'), findsNothing);
 
       // Complete the future
-      completer.complete('https://short.url/abc123');
+      completer.complete(ShortUrl(
+        originalUrl: 'https://example.com',
+        shortId: 'abc123',
+        shortUrl: 'https://short.url/abc123',
+        createdAt: DateTime.now(),
+      ));
       await tester.pumpAndSettle();
     });
 
     testWidgets('displays shortened URL with copy button', (tester) async {
-      when(urlService.shortenRestrictedUrl('https://example.com'))
-          .thenAnswer((_) => Future.value('https://short.url/abc123'));
+      when(urlService.createShortUrl(
+        url: anyNamed('url'),
+        context: anyNamed('context'),
+        ttl: anyNamed('ttl'),
+      )).thenAnswer((_) => Future.value(ShortUrl(
+        originalUrl: 'https://example.com',
+        shortId: 'abc123',
+        shortUrl: 'https://short.url/abc123',
+        createdAt: DateTime.now(),
+      )));
 
       await pumpUrlShortenerForm(tester);
 
@@ -95,7 +113,7 @@ void main() {
 
       // Submit form
       await tester.tap(find.text('SHORTEN URL'));
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(); // Wait for animations to complete
 
       // Verify shortened URL is displayed
       expect(find.text('https://short.url/abc123'), findsOneWidget);
@@ -103,8 +121,11 @@ void main() {
     });
 
     testWidgets('shows error message for failed URL shortening', (tester) async {
-      when(urlService.shortenRestrictedUrl('https://example.com'))
-          .thenThrow(Exception('Failed to shorten URL'));
+      when(urlService.createShortUrl(
+        url: anyNamed('url'),
+        context: anyNamed('context'),
+        ttl: anyNamed('ttl'),
+      )).thenThrow(Exception('Failed to shorten URL'));
 
       await pumpUrlShortenerForm(tester);
 
@@ -114,14 +135,22 @@ void main() {
 
       // Submit form
       await tester.tap(find.text('SHORTEN URL'));
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(); // Wait for animations to complete
 
       expect(find.text('Failed to shorten URL. Please try again.'), findsOneWidget);
     });
 
     testWidgets('maintains responsive layout across different screen sizes', (tester) async {
-      when(urlService.shortenRestrictedUrl('https://example.com'))
-          .thenAnswer((_) => Future.value('https://short.url/abc123'));
+      when(urlService.createShortUrl(
+        url: anyNamed('url'),
+        context: anyNamed('context'),
+        ttl: anyNamed('ttl'),
+      )).thenAnswer((_) => Future.value(ShortUrl(
+        originalUrl: 'https://example.com',
+        shortId: 'abc123',
+        shortUrl: 'https://short.url/abc123',
+        createdAt: DateTime.now(),
+      )));
       
       await pumpUrlShortenerForm(tester);
 
