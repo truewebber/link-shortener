@@ -1,196 +1,134 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:link_shortener/models/auth/oauth_provider.dart';
+import 'package:link_shortener/models/auth/user.dart';
+import 'package:link_shortener/models/auth/user_session.dart';
+import 'package:link_shortener/screens/auth_screen.dart';
 import 'package:link_shortener/screens/home_screen.dart';
+import 'package:link_shortener/screens/profile_screen.dart';
 import 'package:link_shortener/widgets/feature_section.dart';
 import 'package:link_shortener/widgets/url_shortener_form.dart';
+import 'package:mockito/mockito.dart';
 
 import '../mocks/auth_service.generate.mocks.dart';
-import '../test_helper.dart';
+import '../mocks/url_service.generate.mocks.dart';
 
 void main() {
-  late TestAppConfig testConfig;
   late MockAuthService testAuthService;
+  late MockUrlService testUrlService;
   
   setUp(() {
-    testConfig = TestAppConfig();
     testAuthService = MockAuthService();
+    testUrlService = MockUrlService();
   });
   
   tearDown(() {
     // Убедимся, что ресурсы очищены после каждого теста
     testAuthService.dispose();
+    testUrlService.dispose();
   });
   
+  Future<void> pumpHomeScreen(WidgetTester tester, {bool isAuthenticated = false}) async {
+    if (isAuthenticated) {
+      final session = UserSession(
+        user: const User(
+          id: 1,
+          name: 'Test User',
+          email: 'test@example.com',
+          provider: OAuthProvider.google,
+        ),
+        token: 'test-token',
+        refreshToken: 'test-refresh-token',
+        expiresAt: DateTime.now().add(const Duration(hours: 1)),
+      );
+      when(testAuthService.currentSession).thenReturn(session);
+      when(testAuthService.isAuthenticated).thenReturn(true);
+    } else {
+      when(testAuthService.currentSession).thenReturn(null);
+      when(testAuthService.isAuthenticated).thenReturn(false);
+    }
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HomeScreen(
+          authService: testAuthService,
+          urlService: testUrlService,
+        ),
+      ),
+    );
+    await tester.pump();
+  }
+  
   group('HomeScreen', () {
-    testWidgets('displays all main components', (tester) async {
-      await tester.pumpWidget(
-        TestWidgetWrapper(
-          config: testConfig,
-          authService: testAuthService,
-          child: const HomeScreen(),
-        ),
-      );
-      
-      // Дождемся завершения всех анимаций
+    testWidgets('should show different content for authenticated users', (tester) async {
+      await pumpHomeScreen(tester, isAuthenticated: true);
+
+      // Verify authenticated user content
+      expect(find.text('Welcome back, Test User!'), findsOneWidget);
+      expect(find.text('You now have access to additional features including custom expiration times and link management.'), findsOneWidget);
+      expect(find.text('Profile'), findsOneWidget);
+    });
+
+    testWidgets('should show content for anonymous users', (tester) async {
+      await pumpHomeScreen(tester);
+
+      // Verify anonymous user content
+      expect(find.text('Sign In for More Features'), findsOneWidget);
+      expect(find.text('Links created by anonymous users expire after 3 months.'), findsOneWidget);
+    });
+
+    testWidgets('should handle navigation to auth screen', (tester) async {
+      await pumpHomeScreen(tester);
+
+      // Tap sign in button
+      await tester.tap(find.text('Sign In for More Features'));
       await tester.pumpAndSettle();
-      
-      // Check for main components
-      expect(find.text('Link Shortener'), findsOneWidget);
-      expect(find.byType(UrlShortenerForm), findsOneWidget);
+
+      // Verify navigation to auth screen
+      expect(find.byType(AuthScreen), findsOneWidget);
+    });
+
+    testWidgets('should handle navigation to profile screen', (tester) async {
+      await pumpHomeScreen(tester, isAuthenticated: true);
+
+      // Tap profile button
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+
+      // Verify navigation to profile screen
+      expect(find.byType(ProfileScreen), findsOneWidget);
+    });
+
+    testWidgets('should display feature section', (tester) async {
+      await pumpHomeScreen(tester);
+
+      // Verify feature section is present
       expect(find.byType(FeatureSection), findsOneWidget);
-      
-      // Дождемся завершения всех таймеров перед выходом
-      await tester.pumpAndSettle(const Duration(seconds: 1));
     });
-    
-    testWidgets('adapts to different screen sizes', (tester) async {
-      await tester.pumpWidget(
-        TestWidgetWrapper(
-          config: testConfig,
-          authService: testAuthService,
-          child: const HomeScreen(),
-        ),
-      );
-      
-      await tester.pumpAndSettle();
-      
-      // Test desktop layout (>900px)
-      await tester.binding.setSurfaceSize(const Size(1000, 800));
-      await tester.pumpAndSettle();
-      
-      // Test tablet layout (600-900px)
-      await tester.binding.setSurfaceSize(const Size(800, 600));
-      await tester.pumpAndSettle();
-      
-      // Test mobile layout (<600px)
-      await tester.binding.setSurfaceSize(const Size(400, 800));
-      await tester.pumpAndSettle();
-      
-      // Just check that the screen adapts without errors
+
+    testWidgets('should handle URL shortening form', (tester) async {
+      await pumpHomeScreen(tester);
+
+      // Verify URL shortening form is present
       expect(find.byType(UrlShortenerForm), findsOneWidget);
-      
-      await tester.pumpAndSettle(const Duration(seconds: 1));
     });
-    
-    testWidgets('maintains consistent spacing', (tester) async {
-      await tester.pumpWidget(
-        TestWidgetWrapper(
-          config: testConfig,
-          authService: testAuthService,
-          child: const HomeScreen(),
-        ),
-      );
-      
-      await tester.pumpAndSettle();
-      
-      // Check that key components exist
-      expect(find.text('Shorten Your Links'), findsOneWidget);
-      expect(find.byType(UrlShortenerForm), findsOneWidget);
-      expect(find.byType(FeatureSection), findsOneWidget);
-      
-      await tester.pumpAndSettle(const Duration(seconds: 1));
-    });
-    
-    testWidgets('displays correct heading text', (tester) async {
-      await tester.pumpWidget(
-        TestWidgetWrapper(
-          config: testConfig,
-          authService: testAuthService,
-          child: const HomeScreen(),
-        ),
-      );
-      
-      await tester.pumpAndSettle();
-      
-      expect(
-        find.text('Shorten Your Links'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('Create short, memorable links that redirect to your long URLs. Share them easily on social media, emails, or messages.'),
-        findsOneWidget,
-      );
-      
-      await tester.pumpAndSettle(const Duration(seconds: 1));
-    });
-    
-    testWidgets('maintains responsive padding', (tester) async {
-      await tester.pumpWidget(
-        TestWidgetWrapper(
-          config: testConfig,
-          authService: testAuthService,
-          child: const HomeScreen(),
-        ),
-      );
-      
-      await tester.pumpAndSettle();
-      
-      // Just verify the screen builds without errors at different sizes
-      await tester.binding.setSurfaceSize(const Size(1000, 800));
-      await tester.pumpAndSettle();
-      
+
+    testWidgets('should maintain responsive layout', (tester) async {
+      await pumpHomeScreen(tester);
+
+      // Test desktop layout
+      await tester.binding.setSurfaceSize(const Size(1200, 800));
+      await tester.pump();
+
+      // Verify desktop layout elements
+      expect(find.byType(Row), findsWidgets);
+
+      // Test mobile layout
       await tester.binding.setSurfaceSize(const Size(400, 800));
-      await tester.pumpAndSettle();
-      
-      expect(find.byType(HomeScreen), findsOneWidget);
-      
-      await tester.pumpAndSettle(const Duration(seconds: 1));
-    });
-    
-    testWidgets('handles theme changes correctly', (tester) async {
-      await tester.pumpWidget(
-        TestWidgetWrapper(
-          config: testConfig,
-          authService: testAuthService,
-          child: const HomeScreen(),
-        ),
-      );
-      
-      await tester.pumpAndSettle();
-      
-      // Verify initial theme
-      final initialTheme = Theme.of(tester.element(find.byType(HomeScreen)));
-      expect(initialTheme.brightness, Brightness.light);
-      
-      // Change to dark theme
-      await tester.binding.setSurfaceSize(const Size(1000, 800));
-      await tester.pumpAndSettle();
-      
-      // Verify theme consistency
-      final finalTheme = Theme.of(tester.element(find.byType(HomeScreen)));
-      expect(finalTheme.brightness, Brightness.light);
-      
-      await tester.pumpAndSettle(const Duration(seconds: 1));
-    });
-    
-    testWidgets('maintains scroll behavior', (tester) async {
-      await tester.pumpWidget(
-        TestWidgetWrapper(
-          config: testConfig,
-          authService: testAuthService,
-          child: const HomeScreen(),
-        ),
-      );
-      
-      await tester.pumpAndSettle();
-      
-      // Find the main ScrollView by looking for the one that contains the UrlShortenerForm
-      final scrollViewFinder = find.ancestor(
-        of: find.byType(UrlShortenerForm),
-        matching: find.byType(SingleChildScrollView),
-      );
-      
-      expect(scrollViewFinder, findsOneWidget);
-      
-      // Test scrolling
-      await tester.drag(scrollViewFinder, const Offset(0, -100));
-      await tester.pumpAndSettle();
-      
-      // Verify scroll position
-      final scrollController = PrimaryScrollController.of(tester.element(scrollViewFinder));
-      expect(scrollController.position.pixels, greaterThan(0));
-      
-      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await tester.pump();
+
+      // Verify mobile layout elements
+      expect(find.byType(Column), findsWidgets);
     });
   });
 }

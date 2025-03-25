@@ -45,8 +45,8 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
       return;
     }
 
-    final RenderBox button = context.findRenderObject() as RenderBox;
-    final Offset offset = Offset(0, button.size.height + 8);
+    final button = context.findRenderObject() as RenderBox;
+    final offset = Offset(0, button.size.height + 8);
 
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
@@ -147,8 +147,7 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return CompositedTransformTarget(
+  Widget build(BuildContext context) => CompositedTransformTarget(
       link: _layerLink,
       child: GestureDetector(
         onTap: () => _showMenu(context),
@@ -170,7 +169,6 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
         ),
       ),
     );
-  }
 
   Widget _buildAvatar(BuildContext context) {
     final user = widget.userSession.user;
