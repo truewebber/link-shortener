@@ -33,7 +33,11 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
     _urlService = widget.urlService ?? UrlService();
     _authService = widget.authService ?? AuthService();
     _isLoading = true;
-    _loadUrls();
+    
+    // Use addPostFrameCallback to ensure loading state is visible in first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUrls();
+    });
   }
   
   Future<void> _loadUrls() async {
@@ -45,22 +49,21 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
       return;
     }
     
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-    
     try {
       final urls = await _urlService.getUserUrls(context: context);
-      setState(() {
-        _urls = urls;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _urls = urls;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to load URLs: ${e.toString()}';
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to load URLs: ${e.toString()}';
+          _isLoading = false;
+        });
+      }
     }
   }
   
@@ -105,15 +108,27 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
   }
   
   Future<void> _copyToClipboard(String url) async {
-    await Clipboard.setData(ClipboardData(text: url));
-    if (mounted) {
+    try {
+      await Clipboard.setData(ClipboardData(text: url));
+      
+      if (!mounted) return;
+      
+      // Show snackbar immediately after clipboard operation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('URL copied to clipboard'),
           duration: Duration(seconds: 2),
         ),
       );
-      await Future.delayed(Duration.zero);
+    } catch (e) {
+      if (!mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to copy URL: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
   
@@ -259,59 +274,12 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
   Widget build(BuildContext context) {
     if (!_authService.isAuthenticated) {
       return Scaffold(
-        body: Center(
-          child: Text(
-            'Please sign in to view your URLs',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-        ),
-      );
-    }
-
-    if (_isLoading) {
-      return Scaffold(
         appBar: AppBar(
           title: const Text('My URLs'),
         ),
         body: const Center(
-          child: CircularProgressIndicator(),
+          child: Text('Please sign in to view your URLs'),
         ),
-      );
-    }
-
-    if (_errorMessage != null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('My URLs'),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                _errorMessage!,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.red,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _loadUrls,
-                child: const Text('Try Again'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (_urls == null || _urls!.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('My URLs'),
-        ),
-        body: _buildEmptyState(),
       );
     }
 
@@ -319,7 +287,33 @@ class _UrlManagementScreenState extends State<UrlManagementScreen> {
       appBar: AppBar(
         title: const Text('My URLs'),
       ),
-      body: _buildUrlList(),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : _errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _errorMessage!,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.red,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadUrls,
+                        child: const Text('Try Again'),
+                      ),
+                    ],
+                  ),
+                )
+              : _urls == null || _urls!.isEmpty
+                  ? _buildEmptyState()
+                  : _buildUrlList(),
     );
   }
 }

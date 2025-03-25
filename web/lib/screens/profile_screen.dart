@@ -198,9 +198,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           },
                         ),
                         const Divider(),
-                        ListTile(
-                          leading: const Icon(Icons.notifications),
-                          title: const Text('Notifications'),
+                        const ListTile(
+                          leading: Icon(Icons.notifications),
+                          title: Text('Notifications'),
                           trailing: Switch(
                             value: false,
                             onChanged: null,
@@ -208,19 +208,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           enabled: false,
                         ),
                         const Divider(),
-                        ListTile(
-                          leading: const Icon(Icons.security),
-                          title: const Text('Security'),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: null,
+                        const ListTile(
+                          leading: Icon(Icons.security),
+                          title: Text('Security'),
+                          trailing: Icon(Icons.chevron_right),
                           enabled: false,
                         ),
                         const Divider(),
-                        ListTile(
-                          leading: const Icon(Icons.help),
-                          title: const Text('Help & Support'),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: null,
+                        const ListTile(
+                          leading: Icon(Icons.help),
+                          title: Text('Help & Support'),
+                          trailing: Icon(Icons.chevron_right),
                           enabled: false,
                         ),
                       ],
