@@ -153,96 +153,98 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return SingleChildScrollView(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                _buildProfileCard(
-                  title: 'Account Information',
-                  icon: Icons.account_circle,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
                   children: [
-                    _buildInfoRow(
-                      icon: Icons.person,
-                      label: 'Name',
-                      value: _user!.name,
+                    _buildProfileCard(
+                      title: 'Account Information',
+                      icon: Icons.account_circle,
+                      children: [
+                        _buildInfoRow(
+                          icon: Icons.person,
+                          label: 'Name',
+                          value: _user!.name,
+                        ),
+                        _buildInfoRow(
+                          icon: Icons.email,
+                          label: 'Email',
+                          value: _user!.email,
+                        ),
+                        _buildInfoRow(
+                          icon: Icons.login,
+                          label: 'Sign In Method',
+                          value: _user!.provider.name,
+                          trailing: Icon(_user!.provider.icon),
+                        ),
+                      ],
                     ),
-                    _buildInfoRow(
-                      icon: Icons.email,
-                      label: 'Email',
-                      value: _user!.email,
+                    const SizedBox(height: 24),
+                    _buildProfileCard(
+                      title: 'Quick Actions',
+                      icon: Icons.dashboard,
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.link),
+                          title: const Text('My Links'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () {
+                            Navigator.of(context).pushNamed('/urls');
+                          },
+                        ),
+                        const Divider(),
+                        ListTile(
+                          leading: const Icon(Icons.notifications),
+                          title: const Text('Notifications'),
+                          trailing: Switch(
+                            value: false,
+                            onChanged: null,
+                          ),
+                          enabled: false,
+                        ),
+                        const Divider(),
+                        ListTile(
+                          leading: const Icon(Icons.security),
+                          title: const Text('Security'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: null,
+                          enabled: false,
+                        ),
+                        const Divider(),
+                        ListTile(
+                          leading: const Icon(Icons.help),
+                          title: const Text('Help & Support'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: null,
+                          enabled: false,
+                        ),
+                      ],
                     ),
-                    _buildInfoRow(
-                      icon: Icons.login,
-                      label: 'Sign In Method',
-                      value: _user!.provider.name,
-                      trailing: Icon(_user!.provider.icon),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                _buildProfileCard(
-                  title: 'Quick Actions',
-                  icon: Icons.dashboard,
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.link),
-                      title: const Text('My Links'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () {
-                        Navigator.of(context).pushNamed('/urls');
-                      },
-                    ),
-                    const Divider(),
-                    ListTile(
-                      leading: const Icon(Icons.notifications),
-                      title: const Text('Notifications'),
-                      trailing: Switch(
-                        value: true, // TODO: Implement notification preferences
-                        onChanged: (value) {
-                          // TODO: Handle notification toggle
-                        },
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _handleSignOut,
+                        icon: const Icon(Icons.logout),
+                        label: const Text('Sign Out'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.error,
+                          side: BorderSide(color: Theme.of(context).colorScheme.error),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
                       ),
                     ),
-                    const Divider(),
-                    ListTile(
-                      leading: const Icon(Icons.security),
-                      title: const Text('Security'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () {
-                        // TODO: Navigate to security settings
-                      },
-                    ),
-                    const Divider(),
-                    ListTile(
-                      leading: const Icon(Icons.help),
-                      title: const Text('Help & Support'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () {
-                        // TODO: Navigate to help center
-                      },
-                    ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _handleSignOut,
-                    icon: const Icon(Icons.logout),
-                    label: const Text('Sign Out'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.error,
-                      side: BorderSide(color: Theme.of(context).colorScheme.error),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

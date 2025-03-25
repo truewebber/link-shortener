@@ -35,24 +35,29 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
   }
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-      onTap: () {
-        Navigator.of(context).pushNamed('/profile');
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Row(
-          children: [
-            _buildAvatar(context),
-            const SizedBox(width: 8),
-            Text(
-              _getUserName(),
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-            ),
-          ],
+  Widget build(BuildContext context) => Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).pushNamed('/profile');
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildAvatar(context),
+              const SizedBox(width: 8),
+              Text(
+                _getUserName(),
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+              ),
+            ],
+          ),
         ),
       ),
     );

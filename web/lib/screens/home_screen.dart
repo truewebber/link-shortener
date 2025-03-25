@@ -80,27 +80,36 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             _buildHeroSection(context),
-            const SizedBox(height: 48),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  if (_userSession != null)
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 48),
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: _buildAuthenticatedBanner(context),
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: [
+                          if (_userSession != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: _buildAuthenticatedBanner(context),
+                            ),
+                          
+                          UrlShortenerForm(
+                            isAuthenticated: _userSession != null,
+                            urlService: _urlService,
+                          ),
+                        ],
+                      ),
                     ),
-                  
-                  UrlShortenerForm(
-                    isAuthenticated: _userSession != null,
-                    urlService: _urlService,
-                  ),
-                ],
+                    const SizedBox(height: 64),
+                    const FeatureSection(),
+                    const SizedBox(height: 64),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 64),
-            const FeatureSection(),
-            const SizedBox(height: 64),
           ],
         ),
       ),
@@ -261,26 +270,32 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Link Shortener'),
         actions: [
           if (_userSession != null)
-            UserProfileHeader(
-              userSession: _userSession!,
-              authService: _authService,
-              onSignOutSuccess: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('You have been signed out.'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-              onSignOutError: (error) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to sign out: $error'),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
-              },
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: UserProfileHeader(
+                  userSession: _userSession!,
+                  authService: _authService,
+                  onSignOutSuccess: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('You have been signed out.'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  onSignOutError: (error) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to sign out: $error'),
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                  },
+                ),
+              ),
             )
           else
             Padding(
