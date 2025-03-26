@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /app
+Allow: /app/terms
+Allow: /app/privacy
+Disallow: /api/
+Disallow: /app/auth
+Disallow: /app/profile
+Disallow: /app/urls
+
+Sitemap: https://short.twb.one/sitemap.xml

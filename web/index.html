@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Free URL shortener service with advanced features. Create short, memorable links with custom retention periods and basic analytics.">
+  <meta name="keywords" content="URL shortener, link shortener, URL analytics, custom links, free URL service">
+  <meta name="author" content="Truewebber">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1A73E8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Free URL Shortener">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://short.twb.one/">
+  <meta property="og:title" content="Truewebber - Free URL Shortener">
+  <meta property="og:description" content="Create short, memorable links with custom retention periods and basic analytics. Free URL shortening service.">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://short.twb.one/">
+  <meta property="twitter:title" content="Truewebber - Free URL Shortener">
+  <meta property="twitter:description" content="Create short, memorable links with custom retention periods and basic analytics. Free URL shortening service.">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+  <title>Truewebber - Free URL Shortener with Analytics</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Schema.org structured data -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Truewebber URL Shortener",
+      "url": "https://short.twb.one/app",
+      "description": "Free URL shortener service with advanced features. Create short, memorable links with custom retention periods and basic analytics.",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Custom retention periods",
+        "Basic analytics",
+        "User authentication",
+        "URL management"
+      ]
+    }
+  </script>
+
+  <script>
+    // The value below is injected by flutter build, do not touch.
+    const serviceWorkerVersion = null;
+  </script>
+  <!-- This script adds the flutter initialization JS code -->
+  <script src="flutter.js" defer></script>
+</head>
+<body>
+  <script>
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

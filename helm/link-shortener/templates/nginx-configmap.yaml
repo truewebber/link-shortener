@@ -42,6 +42,19 @@ data:
             proxy_set_header X-Real-IP $remote_addr;
         }
 
+        # SEO files
+        location = /sitemap.xml {
+            proxy_pass http://{{ .Release.Name }}-frontend:{{ .Values.frontend.port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        location = /robots.txt {
+            proxy_pass http://{{ .Release.Name }}-frontend:{{ .Values.frontend.port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
         # URL shortener redirection - catch all other paths
         location / {
             proxy_pass http://{{ .Release.Name }}-api:{{ .Values.api.port }};
