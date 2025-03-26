@@ -41,22 +41,29 @@ class Footer extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildFooterLink(
-                    context,
-                    'Terms of Service',
-                    () => Navigator.of(context).pushNamed('/terms'),
-                  ),
-                  const SizedBox(width: 24),
-                  _buildFooterLink(
-                    context,
-                    'Privacy Policy',
-                    () => Navigator.of(context).pushNamed('/privacy'),
-                  ),
-                  const SizedBox(width: 24),
-                  _buildFooterLink(
-                    context,
-                    'Contact Us',
-                    () => _launchUrl('mailto:support@truewebber.com'),
+                  Flexible(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 24,
+                      runSpacing: 16,
+                      children: [
+                        _buildFooterLink(
+                          context,
+                          'Terms of Service',
+                          () => Navigator.of(context).pushNamed('/terms'),
+                        ),
+                        _buildFooterLink(
+                          context,
+                          'Privacy Policy',
+                          () => Navigator.of(context).pushNamed('/privacy'),
+                        ),
+                        _buildFooterLink(
+                          context,
+                          'Contact Us',
+                          () => _launchUrl('mailto:support@truewebber.com'),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -64,51 +71,61 @@ class Footer extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    '© ${DateTime.now().year} Link Shortener. All rights reserved.',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withAlpha(179),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '•',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withAlpha(128),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => _launchUrl('https://truewebber.com'),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Powered by ',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurface
-                                      .withAlpha(179),
-                                ),
-                              ),
-                              Text(
-                                'Truewebber',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                  Flexible(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        Text(
+                          '© ${DateTime.now().year} Link Shortener. All rights reserved.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withAlpha(179),
                           ),
                         ),
-                      ),
+                        Text(
+                          '•',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withAlpha(128),
+                          ),
+                        ),
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => _launchUrl('https://truewebber.com'),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Powered by ',
+                                      style:
+                                          theme.textTheme.bodySmall?.copyWith(
+                                        color: theme.colorScheme.onSurface
+                                            .withAlpha(179),
+                                      ),
+                                    ),
+                                    Text(
+                                      'TrueWebber',
+                                      style:
+                                          theme.textTheme.bodySmall?.copyWith(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

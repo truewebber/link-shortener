@@ -22,62 +22,64 @@ class HomeScreen extends StatelessWidget {
           'Building HomeScreen. Authenticated: ${authService.currentSession != null}');
     }
 
-    return Column(
-      children: [
-        _buildHeroSection(context),
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).colorScheme.shadow.withAlpha(13),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildHeroSection(context),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.shadow.withAlpha(13),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 48),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: [
+                          if (authService.currentSession != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: _buildAuthenticatedBanner(context),
+                            ),
+                          UrlShortenerForm(
+                            isAuthenticated: authService.currentSession != null,
+                            urlService: urlService,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
-          child: Center(
+          Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1200),
-              child: Column(
+              child: const Column(
                 children: [
-                  const SizedBox(height: 48),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      children: [
-                        if (authService.currentSession != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 24),
-                            child: _buildAuthenticatedBanner(context),
-                          ),
-                        UrlShortenerForm(
-                          isAuthenticated: authService.currentSession != null,
-                          urlService: urlService,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 48),
+                  SizedBox(height: 64),
+                  FeatureSection(),
+                  SizedBox(height: 64),
                 ],
               ),
             ),
           ),
-        ),
-        Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1200),
-            child: const Column(
-              children: [
-                SizedBox(height: 64),
-                FeatureSection(),
-                SizedBox(height: 64),
-              ],
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -156,32 +158,30 @@ class HomeScreen extends StatelessWidget {
             final isDesktop = constraints.maxWidth > 900;
             final isTablet = constraints.maxWidth > 600;
 
-            return Column(
-              children: [
-                Text(
-                  'Shorten Your Links',
-                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: isDesktop ? 600 : (isTablet ? 450 : double.infinity),
-                  child: Text(
-                    authService.currentSession != null
-                        ? 'Create short, memorable links with full control over expiration and tracking features.'
-                        : 'Create short, memorable links that redirect to your long URLs. Share them easily on social media, emails, or messages.',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.white.withAlpha(230),
-                        ),
-                    textAlign: TextAlign.center,
+            final titleText = Text(
+              'Shorten Your Links',
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
-                ),
-                if (authService.currentSession == null) ...[
-                  const SizedBox(height: 24),
-                  ElevatedButton(
+              textAlign: TextAlign.center,
+            );
+
+            final descriptionText = SizedBox(
+              width: isDesktop ? 600 : (isTablet ? 450 : double.infinity),
+              child: Text(
+                authService.currentSession != null
+                    ? 'Create short, memorable links with full control over expiration and tracking features.'
+                    : 'Create short, memorable links that redirect to your long URLs. Share them easily on social media, emails, or messages.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.white.withAlpha(230),
+                    ),
+                textAlign: TextAlign.center,
+              ),
+            );
+
+            final signInButton = authService.currentSession == null
+                ? ElevatedButton(
                     onPressed: () => Navigator.pushNamed(context, '/auth'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
@@ -193,9 +193,46 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     child: const Text('Sign In for More Features'),
+                  )
+                : null;
+
+            if (isDesktop) {
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1200),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      titleText,
+                      const SizedBox(height: 16),
+                      descriptionText,
+                      if (signInButton != null) ...[
+                        const SizedBox(height: 24),
+                        signInButton,
+                      ],
+                    ],
                   ),
-                ],
-              ],
+                ),
+              );
+            }
+
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: isTablet ? 600 : 400,
+                ),
+                child: Column(
+                  children: [
+                    titleText,
+                    const SizedBox(height: 16),
+                    descriptionText,
+                    if (signInButton != null) ...[
+                      const SizedBox(height: 24),
+                      signInButton,
+                    ],
+                  ],
+                ),
+              ),
             );
           },
         ),
