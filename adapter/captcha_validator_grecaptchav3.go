@@ -18,12 +18,11 @@ import (
 )
 
 type googleCaptchaV3 struct {
+	logger         log.Logger
+	httpClient     *http.Client
 	secret         string
 	allowedActions []string
 	threshold      float32
-
-	httpClient *http.Client
-	logger     log.Logger
 }
 
 func NewGoogleCaptchaV3Validator(
@@ -63,12 +62,12 @@ func (v *googleCaptchaV3) Validate(ctx context.Context, response string) error {
 }
 
 type siteVerifyResponse struct {
-	Success     bool          `json:"success"`
-	Score       float32       `json:"score"`
-	Action      string        `json:"action"`
-	ChallengeTs time.Time     `json:"challenge_ts"`
-	Hostname    string        `json:"hostname"`
-	ErrorCodes  []interface{} `json:"error-codes"`
+	ChallengedAt time.Time     `json:"challenge_ts"`
+	Action       string        `json:"action"`
+	Hostname     string        `json:"hostname"`
+	ErrorCodes   []interface{} `json:"error-codes"`
+	Score        float32       `json:"score"`
+	Success      bool          `json:"success"`
 }
 
 const verifyURL = "https://www.google.com/recaptcha/api/siteverify"
@@ -84,7 +83,7 @@ func (v *googleCaptchaV3) requestValidate(ctx context.Context, response string) 
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, verifyURL, requestBody)
 	if err != nil {
-		return nil, fmt.Errorf("http http request: %w", err)
+		return nil, fmt.Errorf("new http request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")

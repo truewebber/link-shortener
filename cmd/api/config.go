@@ -7,24 +7,20 @@ import (
 )
 
 type config struct {
-	AppHostPort              string `env:"APP_HOST_PORT,required=true"`
-	MetricsHostPort          string `env:"METRICS_HOST_PORT,required=true"`
-	BaseHost                 string `env:"BASE_HOST,required=true"`
-	PostgresConnectionString string `env:"POSTGRES_CONNECTION_STRING,required=true"`
-
-	GoogleCaptchaSecretKey string  `env:"GOOGLE_CAPTCHA_SECRET_KEY,required=true"`
-	GoogleCaptchaThreshold float32 `env:"GOOGLE_CAPTCHA_THRESHOLD,required=true"`
-
-	GoogleClientID     string `env:"GOOGLE_CLIENT_ID,required=true"`
-	GoogleClientSecret string `env:"GOOGLE_CLIENT_SECRET,required=true"`
-
-	AppleClientID   string `env:"APPLE_CLIENT_ID,required=true"`
-	ApplePrivateKey string `env:"APPLE_PRIVATE_KEY,required=true"`
-	AppleKeyID      string `env:"APPLE_KEY_ID,required=true"`
-	AppleTeamID     string `env:"APPLE_TEAM_ID,required=true"`
-
-	GithubClientID     string `env:"GITHUB_CLIENT_ID,required=true"`
-	GithubClientSecret string `env:"GITHUB_CLIENT_SECRET,required=true"`
+	GoogleClientID           string  `env:"GOOGLE_CLIENT_ID,required=true"`
+	GithubClientID           string  `env:"GITHUB_CLIENT_ID,required=true"`
+	BaseHost                 string  `env:"BASE_HOST,required=true"`
+	PostgresConnectionString string  `env:"POSTGRES_CONNECTION_STRING,required=true"`
+	GoogleCaptchaSecretKey   string  `env:"GOOGLE_CAPTCHA_SECRET_KEY,required=true"`
+	GithubClientSecret       string  `env:"GITHUB_CLIENT_SECRET,required=true"`
+	AppleClientID            string  `env:"APPLE_CLIENT_ID,required=true"`
+	AppHostPort              string  `env:"APP_HOST_PORT,required=true"`
+	MetricsHostPort          string  `env:"METRICS_HOST_PORT,required=true"`
+	ApplePrivateKey          string  `env:"APPLE_PRIVATE_KEY,required=true"`
+	AppleKeyID               string  `env:"APPLE_KEY_ID,required=true"`
+	AppleTeamID              string  `env:"APPLE_TEAM_ID,required=true"`
+	GoogleClientSecret       string  `env:"GOOGLE_CLIENT_SECRET,required=true"`
+	GoogleCaptchaThreshold   float32 `env:"GOOGLE_CAPTCHA_THRESHOLD,required=true"`
 }
 
 func mustLoadConfig() *config {
