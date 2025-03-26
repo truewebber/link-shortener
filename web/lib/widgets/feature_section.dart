@@ -52,27 +52,6 @@ class FeatureSection extends StatelessWidget {
                       description:
                           'Track clicks and view detailed analytics for your links.',
                     ),
-                    _buildFeatureCard(
-                      context,
-                      icon: Icons.security,
-                      title: 'Secure Links',
-                      description:
-                          'All links are encrypted and secure by default.',
-                    ),
-                    _buildFeatureCard(
-                      context,
-                      icon: Icons.devices,
-                      title: 'Cross-Platform',
-                      description:
-                          'Access your links from any device or platform.',
-                    ),
-                    _buildFeatureCard(
-                      context,
-                      icon: Icons.speed,
-                      title: 'Fast Redirection',
-                      description:
-                          'Lightning-fast redirection to your destination URLs.',
-                    ),
                   ],
                 );
               },

@@ -56,7 +56,7 @@ class Footer extends StatelessWidget {
                   _buildFooterLink(
                     context,
                     'Contact Us',
-                    () => Navigator.of(context).pushNamed('/contact'),
+                    () => _launchUrl('mailto:support@truewebber.com'),
                   ),
                 ],
               ),

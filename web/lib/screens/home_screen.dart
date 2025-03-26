@@ -113,7 +113,7 @@ class HomeScreen extends StatelessWidget {
             stops: const [0.0, 0.4, 0.8, 1.0],
             colors: [
               Theme.of(context).colorScheme.primary.withBlue(
-                    Theme.of(context).colorScheme.primary.blue + 20,
+                    Theme.of(context).colorScheme.primary.b.hashCode + 20,
                   ),
               Theme.of(context).colorScheme.primary,
               Theme.of(context).colorScheme.primary.withAlpha(230),
@@ -122,7 +122,7 @@ class HomeScreen extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              color: Theme.of(context).colorScheme.primary.withAlpha(77),
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),

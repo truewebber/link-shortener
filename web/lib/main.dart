@@ -7,7 +7,6 @@ import 'package:link_shortener/config/app_config_provider.dart';
 import 'package:link_shortener/models/auth/user_session.dart';
 import 'package:link_shortener/screens/auth_screen.dart';
 import 'package:link_shortener/screens/home_screen.dart';
-import 'package:link_shortener/screens/legal/contact_us.dart';
 import 'package:link_shortener/screens/legal/privacy_policy.dart';
 import 'package:link_shortener/screens/legal/terms_of_service.dart';
 import 'package:link_shortener/screens/profile_screen.dart';
@@ -216,10 +215,6 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
               ),
           '/privacy': (context) => MainScreen(
                 body: const PrivacyPolicyScreen(),
-                authService: widget.authService,
-              ),
-          '/contact': (context) => MainScreen(
-                body: const ContactUsScreen(),
                 authService: widget.authService,
               ),
         },
