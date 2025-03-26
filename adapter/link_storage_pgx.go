@@ -72,7 +72,7 @@ func (s *linkStoragePGX) Create(ctx context.Context, l *link.Link) error {
 
 const selectLinkByID = `SELECT id, user_id, redirect_url, expires_type, expires_at, created_at, updated_at
 FROM public.urls
-WHERE id = $1 AND NOT deleted AND expires_at > CURRENT_TIMESTAMP;`
+WHERE id = $1 AND NOT deleted AND (expires_type=='never' OR expires_at > CURRENT_TIMESTAMP);`
 
 func (s *linkStoragePGX) ByID(ctx context.Context, id uint64) (*link.Link, error) {
 	var (
@@ -109,7 +109,7 @@ func (s *linkStoragePGX) ByID(ctx context.Context, id uint64) (*link.Link, error
 const (
 	selectLinksByUserID = `SELECT id, user_id, redirect_url, expires_type, expires_at, created_at, updated_at
 FROM urls
-WHERE user_id = $1 AND NOT deleted AND expires_at > CURRENT_TIMESTAMP
+WHERE user_id = $1 AND NOT deleted
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;`
 
@@ -200,11 +200,11 @@ func (s *linkStoragePGX) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-const updateExpiredURLs = `UPDATE urls SET deleted = true, updated_at = CURRENT_TIMESTAMP
+const setDeletedExpiredURLs = `UPDATE urls SET deleted = true, updated_at = CURRENT_TIMESTAMP
 		WHERE NOT deleted AND expires_at IS NOT NULL AND expires_at <= CURRENT_TIMESTAMP;`
 
 func (s *linkStoragePGX) DeleteAllExpired(ctx context.Context) error {
-	if _, err := s.pool.Exec(ctx, updateExpiredURLs); err != nil {
+	if _, err := s.pool.Exec(ctx, setDeletedExpiredURLs); err != nil {
 		return fmt.Errorf("set expired links deleted: %w", err)
 	}
 
