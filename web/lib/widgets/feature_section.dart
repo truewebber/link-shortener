@@ -73,9 +73,9 @@ class FeatureSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.shadow..withAlpha(26),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Theme.of(context).colorScheme.shadow.withAlpha(20),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
             ),
           ],
         ),
@@ -99,10 +99,8 @@ class FeatureSection extends StatelessWidget {
             Text(
               description,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withAlpha(179),
+                    color:
+                        Theme.of(context).colorScheme.onSurface.withAlpha(179),
                   ),
               textAlign: TextAlign.center,
             ),

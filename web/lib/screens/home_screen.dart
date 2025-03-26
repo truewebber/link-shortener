@@ -25,31 +25,54 @@ class HomeScreen extends StatelessWidget {
     return Column(
       children: [
         _buildHeroSection(context),
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.shadow.withAlpha(13),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Column(
+                children: [
+                  const SizedBox(height: 48),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        if (authService.currentSession != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 24),
+                            child: _buildAuthenticatedBanner(context),
+                          ),
+                        UrlShortenerForm(
+                          isAuthenticated: authService.currentSession != null,
+                          urlService: urlService,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+                ],
+              ),
+            ),
+          ),
+        ),
         Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1200),
-            child: Column(
+            child: const Column(
               children: [
-                const SizedBox(height: 48),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      if (authService.currentSession != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 24),
-                          child: _buildAuthenticatedBanner(context),
-                        ),
-                      UrlShortenerForm(
-                        isAuthenticated: authService.currentSession != null,
-                        urlService: urlService,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 64),
-                const FeatureSection(),
-                const SizedBox(height: 64),
+                SizedBox(height: 64),
+                FeatureSection(),
+                SizedBox(height: 64),
               ],
             ),
           ),
