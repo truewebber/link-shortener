@@ -14,14 +14,13 @@ class UrlShortenerService {
 
 // A simplified URL shortener form widget for testing
 class TestUrlShortenerForm extends StatefulWidget {
-  final UrlShortenerService service;
-  final Function(String) onComplete;
-
   const TestUrlShortenerForm({
-    Key? key,
+    super.key,
     required this.service,
     required this.onComplete,
-  }) : super(key: key);
+  });
+  final UrlShortenerService service;
+  final Function(String) onComplete;
 
   @override
   _TestUrlShortenerFormState createState() => _TestUrlShortenerFormState();
@@ -63,8 +62,7 @@ class _TestUrlShortenerFormState extends State<TestUrlShortenerForm> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
+  Widget build(BuildContext context) => Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (_shortUrl == null) ...[
@@ -76,21 +74,21 @@ class _TestUrlShortenerFormState extends State<TestUrlShortenerForm> {
               hintText: 'https://example.com',
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _isLoading ? null : _shortenUrl,
             child: _isLoading
-                ? SizedBox(
+                ? const SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : Text('Shorten URL'),
+                : const Text('Shorten URL'),
           ),
         ] else ...[
-          Text('Your shortened URL is:'),
+          const Text('Your shortened URL is:'),
           SelectableText(_shortUrl!),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
               setState(() {
@@ -98,12 +96,11 @@ class _TestUrlShortenerFormState extends State<TestUrlShortenerForm> {
                 _urlController.clear();
               });
             },
-            child: Text('Shorten Another URL'),
+            child: const Text('Shorten Another URL'),
           ),
         ],
       ],
     );
-  }
 
   @override
   void dispose() {
@@ -114,31 +111,29 @@ class _TestUrlShortenerFormState extends State<TestUrlShortenerForm> {
 
 // A test home screen component
 class TestHomeScreen extends StatelessWidget {
+
+  const TestHomeScreen({super.key, required this.urlService});
   final UrlShortenerService urlService;
 
-  const TestHomeScreen({Key? key, required this.urlService}) : super(key: key);
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
-        title: Text('URL Shortener'),
+        title: const Text('URL Shortener'),
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: TestUrlShortenerForm(
             service: urlService,
             onComplete: (url) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('URL shortened successfully!')),
+                const SnackBar(content: Text('URL shortened successfully!')),
               );
             },
           ),
         ),
       ),
     );
-  }
 }
 
 void main() {
@@ -151,7 +146,7 @@ void main() {
     });
 
     testWidgets('shows URL form and handles shortening process',
-        (WidgetTester tester) async {
+        (tester) async {
       // Act - render the widget
       await tester.pumpWidget(
         MaterialApp(
@@ -188,7 +183,7 @@ void main() {
     });
 
     testWidgets('allows creating another URL after shortening',
-        (WidgetTester tester) async {
+        (tester) async {
       // Act - render, enter URL, and get result
       await tester.pumpWidget(
         MaterialApp(

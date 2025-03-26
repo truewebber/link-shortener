@@ -19,7 +19,7 @@ void main() {
       );
     });
 
-    testWidgets('validates empty URL input', (WidgetTester tester) async {
+    testWidgets('validates empty URL input', (tester) async {
       // Build our app and trigger a frame
       await tester.pumpWidget(
         MaterialApp(
@@ -41,7 +41,7 @@ void main() {
     });
 
     testWidgets('shortens valid URL and shows result',
-        (WidgetTester tester) async {
+        (tester) async {
       // Build the widget
       await tester.pumpWidget(
         MaterialApp(
@@ -79,7 +79,7 @@ void main() {
       expect(mockUrlService.shortenedUrls.containsKey(testUrl), isTrue);
     });
 
-    testWidgets('handles errors gracefully', (WidgetTester tester) async {
+    testWidgets('handles errors gracefully', (tester) async {
       // Create a service that simulates errors
       final errorService = MockUrlService(simulateErrors: true);
 
@@ -115,14 +115,13 @@ void main() {
 // In a real implementation, you'd import the actual widget
 
 class TestUrlShortenerForm extends StatefulWidget {
-  final dynamic service;
-  final Function(String) onComplete;
-
   const TestUrlShortenerForm({
-    Key? key,
+    super.key,
     required this.service,
     required this.onComplete,
-  }) : super(key: key);
+  });
+  final dynamic service;
+  final Function(String) onComplete;
 
   @override
   _TestUrlShortenerFormState createState() => _TestUrlShortenerFormState();
@@ -164,8 +163,7 @@ class _TestUrlShortenerFormState extends State<TestUrlShortenerForm> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
+  Widget build(BuildContext context) => Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (_shortUrl == null) ...[
@@ -177,21 +175,21 @@ class _TestUrlShortenerFormState extends State<TestUrlShortenerForm> {
               hintText: 'https://example.com',
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _isLoading ? null : _shortenUrl,
             child: _isLoading
-                ? SizedBox(
+                ? const SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : Text('Shorten URL'),
+                : const Text('Shorten URL'),
           ),
         ] else ...[
-          Text('Your shortened URL is:'),
+          const Text('Your shortened URL is:'),
           SelectableText(_shortUrl!),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
               setState(() {
@@ -199,12 +197,11 @@ class _TestUrlShortenerFormState extends State<TestUrlShortenerForm> {
                 _urlController.clear();
               });
             },
-            child: Text('Shorten Another URL'),
+            child: const Text('Shorten Another URL'),
           ),
         ],
       ],
     );
-  }
 
   @override
   void dispose() {

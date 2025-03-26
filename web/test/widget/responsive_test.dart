@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('Responsive layout adapts to mobile browser size',
-      (WidgetTester tester) async {
+      (tester) async {
     // Set mobile browser size
-    tester.binding.window.physicalSizeTestValue = Size(375, 667);
+    tester.binding.window.physicalSizeTestValue = const Size(375, 667);
     tester.binding.window.devicePixelRatioTestValue = 1.0;
 
     // Arrange
@@ -28,26 +28,26 @@ void main() {
                       isSmallScreen ? 'Mobile Layout' : 'Larger Layout',
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Container(
                       width: isSmallScreen ? width * 0.9 : width * 0.7,
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       color: Colors.blue.shade100,
-                      child: TextField(
+                      child: const TextField(
                         decoration: InputDecoration(
                           hintText: 'Enter URL here',
                           border: OutlineInputBorder(),
                         ),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         minimumSize:
                             Size(isSmallScreen ? width * 0.9 : width * 0.3, 50),
                       ),
                       onPressed: () {},
-                      child: Text('Shorten URL'),
+                      child: const Text('Shorten URL'),
                     ),
                   ],
                 ),
@@ -68,9 +68,9 @@ void main() {
   });
 
   testWidgets('Responsive layout adapts to tablet browser size',
-      (WidgetTester tester) async {
+      (tester) async {
     // Set tablet browser size
-    tester.binding.window.physicalSizeTestValue = Size(768, 1024);
+    tester.binding.window.physicalSizeTestValue = const Size(768, 1024);
     tester.binding.window.devicePixelRatioTestValue = 1.0;
 
     // Arrange
@@ -93,12 +93,12 @@ void main() {
                       isSmallScreen ? 'Mobile Layout' : 'Larger Layout',
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Container(
                       width: isSmallScreen ? width * 0.9 : width * 0.7,
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       color: Colors.blue.shade100,
-                      child: TextField(
+                      child: const TextField(
                         decoration: InputDecoration(
                           hintText: 'Enter URL here',
                           border: OutlineInputBorder(),
@@ -124,9 +124,9 @@ void main() {
   });
 
   testWidgets('Responsive layout adapts to desktop browser size',
-      (WidgetTester tester) async {
+      (tester) async {
     // Set desktop browser size
-    tester.binding.window.physicalSizeTestValue = Size(1920, 1080);
+    tester.binding.window.physicalSizeTestValue = const Size(1920, 1080);
     tester.binding.window.devicePixelRatioTestValue = 1.0;
 
     // Arrange
@@ -152,7 +152,7 @@ void main() {
                     Container(
                       width: 250,
                       color: Colors.blue.shade50,
-                      child: Column(
+                      child: const Column(
                         children: [
                           ListTile(title: Text('Dashboard')),
                           ListTile(title: Text('My URLs')),
@@ -173,16 +173,16 @@ void main() {
                                     : 'Tablet Layout',
                             style: Theme.of(context).textTheme.headlineMedium,
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           Container(
                             width: isSmallScreen
                                 ? width * 0.9
                                 : isLargeScreen
                                     ? width * 0.5
                                     : width * 0.7,
-                            padding: EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(16),
                             color: Colors.blue.shade100,
-                            child: TextField(
+                            child: const TextField(
                               decoration: InputDecoration(
                                 hintText: 'Enter URL here',
                                 border: OutlineInputBorder(),

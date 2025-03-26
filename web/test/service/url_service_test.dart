@@ -8,7 +8,7 @@ void main() {
       expect(true, isTrue);
     });
 
-    testWidgets('URL can be shortened via API', (WidgetTester tester) async {
+    testWidgets('URL can be shortened via API', (tester) async {
       skipIfNotBrowser(tester);
 
       // TODO: Implement actual URL shortening test that connects to backend
@@ -18,7 +18,7 @@ void main() {
     });
 
     testWidgets('Error handling works for invalid URLs',
-        (WidgetTester tester) async {
+        (tester) async {
       skipIfNotBrowser(tester);
 
       // TODO: Test error handling with invalid input

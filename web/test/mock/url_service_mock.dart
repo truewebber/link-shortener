@@ -1,9 +1,6 @@
 /// Mock implementation of the URL shortener service
 /// This can be used in both VM and browser environments
 class MockUrlService {
-  final Map<String, String> _shortenedUrls = {};
-  final Duration delay;
-  final bool simulateErrors;
 
   /// Create a new mock URL service
   /// - [delay]: Artificial delay to simulate network latency
@@ -12,6 +9,9 @@ class MockUrlService {
     this.delay = const Duration(milliseconds: 300),
     this.simulateErrors = false,
   });
+  final Map<String, String> _shortenedUrls = {};
+  final Duration delay;
+  final bool simulateErrors;
 
   /// Simulates shortening a URL
   ///

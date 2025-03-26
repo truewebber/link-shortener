@@ -10,7 +10,7 @@ void main() {
 
     // These tests are properly marked as skipped in non-browser environments
     testWidgets('Skip tests that require JavaScript interop',
-        (WidgetTester tester) async {
+        (tester) async {
       skipIfNotBrowser(tester);
 
       // If we get here, we're in a browser environment and could run real tests
@@ -18,7 +18,7 @@ void main() {
     });
 
     testWidgets('reCAPTCHA verification token can be obtained',
-        (WidgetTester tester) async {
+        (tester) async {
       skipIfNotBrowser(tester);
 
       // This is just a stub - in a real test you would:
