@@ -29,7 +29,7 @@ class FeatureSection extends StatelessWidget {
                   crossAxisCount: crossAxisCount,
                   mainAxisSpacing: 24,
                   crossAxisSpacing: 24,
-                  childAspectRatio: 1.5,
+                  childAspectRatio: 1.2,
                   children: [
                     _buildFeatureCard(
                       context,
@@ -96,13 +96,19 @@ class FeatureSection extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            Text(
-              description,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color:
-                        Theme.of(context).colorScheme.onSurface.withAlpha(179),
-                  ),
-              textAlign: TextAlign.center,
+            Flexible(
+              child: Text(
+                description,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withAlpha(179),
+                    ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 3,
+              ),
             ),
           ],
         ),

@@ -21,7 +21,7 @@ void main() {
     testAuthService = MockAuthService();
     testUrlService = MockUrlService();
   });
-  
+
   tearDown(() {
     // Ensure the AuthService is disposed to clean up timers
     testUrlService.dispose();
@@ -44,14 +44,14 @@ void main() {
       expect(find.byType(HomeScreen), findsOneWidget);
       expect(find.byType(TextFormField), findsOneWidget);
       expect(find.text('Shorten URL'), findsOneWidget);
-      
+
       // Verify anonymous user notice
       expect(
         find.text('Links created by anonymous users expire after 3 months.'),
         findsOneWidget,
       );
     });
-    
+
     testWidgets('handles theme changes correctly', (tester) async {
       await tester.pumpWidget(
         LinkShortenerApp(
@@ -79,7 +79,7 @@ void main() {
       // Set desktop size
       await tester.binding.setSurfaceSize(const Size(1200, 800));
       await tester.pump();
-      
+
       // Finding widgets in different sizes should still work
       expect(find.byType(AppBar), findsOneWidget);
       expect(find.byType(TextFormField), findsOneWidget);
@@ -97,9 +97,9 @@ void main() {
 
       // Verify features are displayed
       expect(find.text('Features'), findsOneWidget);
-      expect(find.text('Fast & Reliable'), findsOneWidget);
-      expect(find.text('Link Analytics'), findsOneWidget);
+      expect(find.text('Short Links'), findsOneWidget);
       expect(find.text('Custom Expiration'), findsOneWidget);
+      expect(find.text('Link Analytics'), findsOneWidget);
     });
   });
 }
