@@ -4,120 +4,130 @@ class FeatureSection extends StatelessWidget {
   const FeatureSection({super.key});
 
   @override
-  Widget build(BuildContext context) => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        children: [
-          Text(
-            'Features',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.primary,
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            Text(
+              'Features',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+              textAlign: TextAlign.center,
             ),
-          ),
-          const SizedBox(height: 48),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth > 900) {
-                final featureItems = _buildFeatureItems(context);
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 48),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isDesktop = constraints.maxWidth > 900;
+                final isTablet = constraints.maxWidth > 600;
+                final crossAxisCount = isDesktop ? 3 : (isTablet ? 2 : 1);
+
+                return GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: 24,
+                  crossAxisSpacing: 24,
+                  childAspectRatio: 1.5,
                   children: [
-                    Expanded(child: featureItems[0]),
-                    Expanded(child: featureItems[1]),
-                    Expanded(child: featureItems[2]),
-                  ],
-                );
-              } else if (constraints.maxWidth > 600) {
-                return Column(
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: _buildFeatureItems(context)[0]),
-                        Expanded(child: _buildFeatureItems(context)[1]),
-                      ],
+                    _buildFeatureCard(
+                      context,
+                      icon: Icons.link,
+                      title: 'Short Links',
+                      description:
+                          'Create short, memorable links that are easy to share.',
                     ),
-                    const SizedBox(height: 32),
-                    _buildFeatureItems(context)[2],
+                    _buildFeatureCard(
+                      context,
+                      icon: Icons.timer,
+                      title: 'Custom Expiration',
+                      description:
+                          'Set custom expiration times for your links.',
+                    ),
+                    _buildFeatureCard(
+                      context,
+                      icon: Icons.analytics,
+                      title: 'Link Analytics',
+                      description:
+                          'Track clicks and view detailed analytics for your links.',
+                    ),
+                    _buildFeatureCard(
+                      context,
+                      icon: Icons.security,
+                      title: 'Secure Links',
+                      description:
+                          'All links are encrypted and secure by default.',
+                    ),
+                    _buildFeatureCard(
+                      context,
+                      icon: Icons.devices,
+                      title: 'Cross-Platform',
+                      description:
+                          'Access your links from any device or platform.',
+                    ),
+                    _buildFeatureCard(
+                      context,
+                      icon: Icons.speed,
+                      title: 'Fast Redirection',
+                      description:
+                          'Lightning-fast redirection to your destination URLs.',
+                    ),
                   ],
                 );
-              } else {
-                return Column(
-                  children: _buildFeatureItems(context)
-                      .map((item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 32),
-                            child: item,
-                          ))
-                      .toList(),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-    );
+              },
+            ),
+          ],
+        ),
+      );
 
-  List<Widget> _buildFeatureItems(BuildContext context) => [
-      _buildFeatureItem(
-        context,
-        icon: Icons.speed,
-        title: 'Fast & Reliable',
-        description:
-            'Our service provides quick URL shortening with high availability and minimal latency.',
-      ),
-      _buildFeatureItem(
-        context,
-        icon: Icons.analytics,
-        title: 'Link Analytics',
-        description:
-            'Track your link performance with detailed analytics and insights.',
-      ),
-      _buildFeatureItem(
-        context,
-        icon: Icons.access_time,
-        title: 'Custom Expiration',
-        description:
-            'Set custom expiration dates for your links when you sign in.',
-      ),
-    ];
-
-  Widget _buildFeatureItem(
+  Widget _buildFeatureCard(
     BuildContext context, {
     required IconData icon,
     required String title,
     required String description,
-  }) => Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withAlpha(26),
-              shape: BoxShape.circle,
+  }) =>
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).colorScheme.shadow..withAlpha(26),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: Icon(
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
               icon,
               size: 48,
               color: Theme.of(context).colorScheme.primary,
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            description,
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-} 
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withAlpha(179),
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+}

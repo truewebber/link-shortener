@@ -36,31 +36,39 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
 
   @override
   Widget build(BuildContext context) => Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).pushNamed('/profile');
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildAvatar(context),
-              const SizedBox(width: 8),
-              Text(
-                _getUserName(),
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).pushNamed('/profile');
+          },
+          hoverColor:
+              Theme.of(context).colorScheme.primaryContainer.withAlpha(26),
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withAlpha(51),
               ),
-            ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildAvatar(context),
+                const SizedBox(width: 8),
+                Text(
+                  _getUserName(),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
 
   Widget _buildAvatar(BuildContext context) {
     final user = widget.userSession.user;
@@ -72,7 +80,7 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
       );
     } else {
       final initials = _getUserInitials();
-      
+
       return CircleAvatar(
         radius: 16,
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -101,9 +109,9 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
     if (user == null) {
       return 'U';
     }
-    
+
     final name = user.name;
-    
+
     if (name.isEmpty) {
       if (user.email.isNotEmpty) {
         return user.email.substring(0, 1).toUpperCase();
@@ -111,12 +119,13 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
         return 'U';
       }
     }
-    
+
     final parts = name.split(' ');
     if (parts.length == 1) {
       return parts.first.substring(0, 1).toUpperCase();
     } else {
-      return (parts.first.substring(0, 1) + parts.last.substring(0, 1)).toUpperCase();
+      return (parts.first.substring(0, 1) + parts.last.substring(0, 1))
+          .toUpperCase();
     }
   }
 }

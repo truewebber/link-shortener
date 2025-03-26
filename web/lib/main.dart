@@ -7,11 +7,16 @@ import 'package:link_shortener/config/app_config_provider.dart';
 import 'package:link_shortener/models/auth/user_session.dart';
 import 'package:link_shortener/screens/auth_screen.dart';
 import 'package:link_shortener/screens/home_screen.dart';
+import 'package:link_shortener/screens/legal/contact_us.dart';
+import 'package:link_shortener/screens/legal/privacy_policy.dart';
+import 'package:link_shortener/screens/legal/terms_of_service.dart';
 import 'package:link_shortener/screens/profile_screen.dart';
 import 'package:link_shortener/screens/url_management_screen.dart';
 import 'package:link_shortener/services/auth_service.dart';
 import 'package:link_shortener/services/url_service.dart';
 import 'package:link_shortener/utils/notification_utils.dart';
+import 'package:link_shortener/widgets/auth/user_profile_header.dart';
+import 'package:link_shortener/widgets/common/footer.dart';
 import 'package:universal_html/html.dart' as html;
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -32,9 +37,7 @@ void main() {
     print('Environment: ${config.environment}');
   }
 
-  final authService = AuthService()
-
-  ..initialize();
+  final authService = AuthService()..initialize();
 
   final urlService = UrlService();
 
@@ -108,7 +111,8 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
         _isHandlingOAuth = true;
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           try {
-            final result = await widget.authService.handleOAuthSuccessCallback(uri);
+            final result =
+                await widget.authService.handleOAuthSuccessCallback(uri);
 
             if (kDebugMode) {
               print('OAuth callback result: ${result['success']}');
@@ -116,9 +120,11 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
             }
 
             if (result['success']) {
-              NotificationUtils.showSuccess(navigatorKey.currentContext, 'Authorization successful');
+              NotificationUtils.showSuccess(
+                  navigatorKey.currentContext, 'Authorization successful');
             } else {
-              NotificationUtils.showError(navigatorKey.currentContext, 'Failed to authorize');
+              NotificationUtils.showError(
+                  navigatorKey.currentContext, 'Failed to authorize');
             }
           } catch (e) {
             if (kDebugMode) {
@@ -139,7 +145,8 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
               print('Error message: ${uri.queryParameters['error']}');
             }
 
-            NotificationUtils.showError(navigatorKey.currentContext, 'Failed to authorize');
+            NotificationUtils.showError(
+                navigatorKey.currentContext, 'Failed to authorize');
           } catch (e) {
             if (kDebugMode) {
               print('Error handling OAuth failure: $e');
@@ -160,7 +167,8 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
-      print('Building LinkShortenerApp. Authenticated: ${_userSession != null}');
+      print(
+          'Building LinkShortenerApp. Authenticated: ${_userSession != null}');
     }
 
     return AppConfigProvider(
@@ -182,14 +190,38 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
           ),
           useMaterial3: true,
         ),
-        home: HomeScreen(
+        home: MainScreen(
+          body: HomeScreen(
+            authService: widget.authService,
+            urlService: widget.urlService,
+          ),
           authService: widget.authService,
-          urlService: widget.urlService,
         ),
         routes: {
-          '/urls': (context) => const UrlManagementScreen(),
-          '/profile': (context) => const ProfileScreen(),
-          '/auth': (context) => const AuthScreen(),
+          '/urls': (context) => MainScreen(
+                body: const UrlManagementScreen(),
+                authService: widget.authService,
+              ),
+          '/profile': (context) => MainScreen(
+                body: const ProfileScreen(),
+                authService: widget.authService,
+              ),
+          '/auth': (context) => MainScreen(
+                body: const AuthScreen(),
+                authService: widget.authService,
+              ),
+          '/terms': (context) => MainScreen(
+                body: const TermsOfServiceScreen(),
+                authService: widget.authService,
+              ),
+          '/privacy': (context) => MainScreen(
+                body: const PrivacyPolicyScreen(),
+                authService: widget.authService,
+              ),
+          '/contact': (context) => MainScreen(
+                body: const ContactUsScreen(),
+                authService: widget.authService,
+              ),
         },
       ),
     );
@@ -198,7 +230,70 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties..add(DiagnosticsProperty<AppConfig>('config', widget.config))
-    ..add(DiagnosticsProperty<UserSession?>('userSession', _userSession));
+    properties
+      ..add(DiagnosticsProperty<AppConfig>('config', widget.config))
+      ..add(DiagnosticsProperty<UserSession?>('userSession', _userSession));
   }
+}
+
+class MainScreen extends StatelessWidget {
+  const MainScreen({
+    super.key,
+    required this.body,
+    required this.authService,
+  });
+
+  final Widget body;
+  final AuthService authService;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          title: const Text('Link Shortener'),
+          actions: [
+            if (authService.currentSession != null && body is! ProfileScreen)
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: UserProfileHeader(
+                  userSession: authService.currentSession!,
+                  authService: authService,
+                  onSignOutSuccess: () {
+                    NotificationUtils.showSuccess(
+                      context,
+                      'Successfully signed out',
+                    );
+                  },
+                  onSignOutError: (error) {
+                    NotificationUtils.showError(
+                      context,
+                      'Failed to sign out: $error',
+                    );
+                  },
+                ),
+              )
+            else if (authService.currentSession == null && body is! AuthScreen)
+              TextButton.icon(
+                onPressed: () => Navigator.pushNamed(context, '/auth'),
+                icon: const Icon(Icons.login),
+                label: const Text('Sign In'),
+              ),
+          ],
+        ),
+        body: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  body,
+                  const Footer(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
 }
