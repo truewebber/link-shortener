@@ -72,7 +72,7 @@ func (s *linkStoragePGX) Create(ctx context.Context, l *link.Link) error {
 
 const selectLinkByID = `SELECT id, user_id, redirect_url, expires_type, expires_at, created_at, updated_at
 FROM public.urls
-WHERE id = $1 AND NOT deleted AND (expires_type=='never' OR expires_at > CURRENT_TIMESTAMP);`
+WHERE id = $1 AND NOT deleted AND (expires_type='never' OR expires_at > CURRENT_TIMESTAMP);`
 
 func (s *linkStoragePGX) ByID(ctx context.Context, id uint64) (*link.Link, error) {
 	var (

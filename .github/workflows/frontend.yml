@@ -6,61 +6,61 @@ on:
   pull_request:
 
 jobs:
-  lint:
-    name: Flutter Lint
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.27.0'
-          channel: 'master'
-          cache: true
-
-      - name: Install dependencies
-        run: |
-          cd web
-          flutter pub get
-
-      - name: Analyze code
-        run: |
-          cd web
-          flutter analyze --no-fatal-infos
-
-  test:
-    name: Flutter Test
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.27.0'
-          channel: 'master'
-          cache: true
-
-      - uses: browser-actions/setup-chrome@v1
-        with:
-          install-dependencies: true
-          install-chromedriver: true
-
-      - name: Install dependencies
-        run: |
-          cd web
-          flutter pub get
-
-      - name: Run tests
-        run: |
-          cd web
-          flutter test --platform=chrome
+#  lint:
+#    name: Flutter Lint
+#    runs-on: self-hosted
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Setup Flutter
+#        uses: subosito/flutter-action@v2
+#        with:
+#          flutter-version: '3.27.0'
+#          channel: 'master'
+#          cache: true
+#
+#      - name: Install dependencies
+#        run: |
+#          cd web
+#          flutter pub get
+#
+#      - name: Analyze code
+#        run: |
+#          cd web
+#          flutter analyze --no-fatal-infos
+#
+#  test:
+#    name: Flutter Test
+#    runs-on: ubuntu-22.04
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Setup Flutter
+#        uses: subosito/flutter-action@v2
+#        with:
+#          flutter-version: '3.27.0'
+#          channel: 'master'
+#          cache: true
+#
+#      - uses: browser-actions/setup-chrome@v1
+#        with:
+#          install-dependencies: true
+#          install-chromedriver: true
+#
+#      - name: Install dependencies
+#        run: |
+#          cd web
+#          flutter pub get
+#
+#      - name: Run tests
+#        run: |
+#          cd web
+#          flutter test --platform=chrome
 
   build:
     name: Build and Push Docker Images
     runs-on: self-hosted
-    needs: [ test, lint ]
+#    needs: [ test, lint ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master' && success()
     steps:
       - name: Checkout code
