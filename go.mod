@@ -5,9 +5,9 @@ go 1.24.0
 require (
 	github.com/Netflix/go-env v0.1.2
 	github.com/Timothylock/go-signin-with-apple v0.2.5
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/gorilla/mux v1.8.1
-	github.com/jackc/pgx/v5 v5.7.3
+	github.com/jackc/pgx/v5 v5.7.4
 	github.com/sqids/sqids-go v0.4.1
 	github.com/truewebber/gopkg v1.3.0
 	golang.org/x/oauth2 v0.28.0
