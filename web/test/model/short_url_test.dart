@@ -5,13 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Mock ShortUrl class for testing
 class ShortUrl {
-  final String id;
-  final String originalUrl;
-  final String shortCode;
-  final DateTime createdAt;
-  final DateTime? expiresAt;
-  final int clickCount;
-
   ShortUrl({
     required this.id,
     required this.originalUrl,
@@ -21,6 +14,24 @@ class ShortUrl {
     this.clickCount = 0,
   });
 
+  factory ShortUrl.fromJson(Map<String, dynamic> json) => ShortUrl(
+        id: json['id'],
+        originalUrl: json['originalUrl'],
+        shortCode: json['shortCode'],
+        createdAt: DateTime.parse(json['createdAt']),
+        expiresAt: json['expiresAt'] != null
+            ? DateTime.parse(json['expiresAt'])
+            : null,
+        clickCount: json['clickCount'] ?? 0,
+      );
+
+  final String id;
+  final String originalUrl;
+  final String shortCode;
+  final DateTime createdAt;
+  final DateTime? expiresAt;
+  final int clickCount;
+
   ShortUrl copyWith({
     String? id,
     String? originalUrl,
@@ -28,44 +39,29 @@ class ShortUrl {
     DateTime? createdAt,
     DateTime? expiresAt,
     int? clickCount,
-  }) {
-    return ShortUrl(
-      id: id ?? this.id,
-      originalUrl: originalUrl ?? this.originalUrl,
-      shortCode: shortCode ?? this.shortCode,
-      createdAt: createdAt ?? this.createdAt,
-      expiresAt: expiresAt ?? this.expiresAt,
-      clickCount: clickCount ?? this.clickCount,
-    );
-  }
+  }) =>
+      ShortUrl(
+        id: id ?? this.id,
+        originalUrl: originalUrl ?? this.originalUrl,
+        shortCode: shortCode ?? this.shortCode,
+        createdAt: createdAt ?? this.createdAt,
+        expiresAt: expiresAt ?? this.expiresAt,
+        clickCount: clickCount ?? this.clickCount,
+      );
 
   bool get isExpired {
     if (expiresAt == null) return false;
     return DateTime.now().isAfter(expiresAt!);
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'originalUrl': originalUrl,
-      'shortCode': shortCode,
-      'createdAt': createdAt.toIso8601String(),
-      'expiresAt': expiresAt?.toIso8601String(),
-      'clickCount': clickCount,
-    };
-  }
-
-  factory ShortUrl.fromJson(Map<String, dynamic> json) {
-    return ShortUrl(
-      id: json['id'],
-      originalUrl: json['originalUrl'],
-      shortCode: json['shortCode'],
-      createdAt: DateTime.parse(json['createdAt']),
-      expiresAt:
-          json['expiresAt'] != null ? DateTime.parse(json['expiresAt']) : null,
-      clickCount: json['clickCount'] ?? 0,
-    );
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'originalUrl': originalUrl,
+        'shortCode': shortCode,
+        'createdAt': createdAt.toIso8601String(),
+        'expiresAt': expiresAt?.toIso8601String(),
+        'clickCount': clickCount,
+      };
 }
 
 void main() {

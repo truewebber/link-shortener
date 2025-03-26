@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Utility functions for browser detection in tests
@@ -19,4 +20,30 @@ void skipIfNotBrowser(WidgetTester tester) {
     );
     return;
   }
+}
+
+/// Gets device pixel ratio from the tester
+/// Uses the non-deprecated view property instead of window
+double getDevicePixelRatio(WidgetTester tester) => tester.view.devicePixelRatio;
+
+/// Gets the physical size from the tester
+/// Uses the non-deprecated view property instead of window
+Size getPhysicalSize(WidgetTester tester) => tester.view.physicalSize;
+
+/// Sets the test window size in a non-deprecated way
+void setDisplaySize(WidgetTester tester, Size size) {
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1.0;
+}
+
+/// Clears the physical size test value (for use in tearDown)
+/// Replacement for tester.binding.window.clearPhysicalSizeTestValue
+void clearPhysicalSizeTestValue(WidgetTester tester) {
+  tester.view.resetPhysicalSize();
+}
+
+/// Clears the device pixel ratio test value (for use in tearDown)
+/// Replacement for tester.binding.window.clearDevicePixelRatioTestValue
+void clearDevicePixelRatioTestValue(WidgetTester tester) {
+  tester.view.resetDevicePixelRatio();
 }

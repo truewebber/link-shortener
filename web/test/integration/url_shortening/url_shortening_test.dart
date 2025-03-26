@@ -10,7 +10,7 @@ void main() {
     // where JS interop is available
 
     testWidgets('URL Shortening Integration Test (Browser only)',
-        (WidgetTester tester) async {
+        (tester) async {
       // Skip this test when not running in a browser
       if (!const bool.fromEnvironment('dart.library.js_util')) {
         markTestSkipped('This test only runs in a browser environment');
@@ -18,7 +18,7 @@ void main() {
       }
 
       // Build a demo app with URL shortening functionality
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(const MaterialApp(
         home: Scaffold(
           body: Center(
             child: Text('Browser integration test would go here'),

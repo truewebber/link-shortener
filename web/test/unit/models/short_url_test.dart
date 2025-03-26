@@ -8,13 +8,13 @@ void main() {
         shortId: 'abc123',
         originalUrl: 'https://example.com',
         shortUrl: 'https://short.url/abc123',
-        createdAt: DateTime(2023, 1, 1),
+        createdAt: DateTime(2023),
       );
 
       expect(shortUrl.shortId, equals('abc123'));
       expect(shortUrl.originalUrl, equals('https://example.com'));
       expect(shortUrl.shortUrl, equals('https://short.url/abc123'));
-      expect(shortUrl.createdAt, equals(DateTime(2023, 1, 1)));
+      expect(shortUrl.createdAt, equals(DateTime(2023)));
       expect(shortUrl.clickCount, equals(0)); // Default value
       expect(shortUrl.customAlias, isNull);
       expect(shortUrl.expiresAt, isNull);
@@ -26,9 +26,9 @@ void main() {
         shortId: 'abc123',
         originalUrl: 'https://example.com',
         shortUrl: 'https://short.url/abc123',
-        createdAt: DateTime(2023, 1, 1),
+        createdAt: DateTime(2023),
         customAlias: 'my-custom-url',
-        expiresAt: DateTime(2023, 4, 1),
+        expiresAt: DateTime(2023, 4),
         clickCount: 42,
         userId: 'user123',
       );
@@ -36,10 +36,10 @@ void main() {
       expect(shortUrl.shortId, equals('abc123'));
       expect(shortUrl.originalUrl, equals('https://example.com'));
       expect(shortUrl.shortUrl, equals('https://short.url/abc123'));
-      expect(shortUrl.createdAt, equals(DateTime(2023, 1, 1)));
+      expect(shortUrl.createdAt, equals(DateTime(2023)));
       expect(shortUrl.clickCount, equals(42));
       expect(shortUrl.customAlias, equals('my-custom-url'));
-      expect(shortUrl.expiresAt, equals(DateTime(2023, 4, 1)));
+      expect(shortUrl.expiresAt, equals(DateTime(2023, 4)));
       expect(shortUrl.userId, equals('user123'));
     });
 
@@ -74,9 +74,9 @@ void main() {
         shortId: 'abc123',
         originalUrl: 'https://example.com',
         shortUrl: 'https://short.url/abc123',
-        createdAt: DateTime(2023, 1, 1),
+        createdAt: DateTime(2023),
         customAlias: 'my-custom-url',
-        expiresAt: DateTime(2023, 4, 1),
+        expiresAt: DateTime(2023, 4),
         clickCount: 42,
         userId: 'user123',
       );
@@ -98,32 +98,32 @@ void main() {
         shortId: 'abc123',
         originalUrl: 'https://example.com',
         shortUrl: 'https://short.url/abc123',
-        createdAt: DateTime(2023, 1, 1),
+        createdAt: DateTime(2023),
       );
 
       final updatedUrl = shortUrl.copyWith(
         clickCount: 10,
-        expiresAt: DateTime(2023, 6, 1),
+        expiresAt: DateTime(2023, 6),
       );
 
       // Changed properties
       expect(updatedUrl.clickCount, equals(10));
-      expect(updatedUrl.expiresAt, equals(DateTime(2023, 6, 1)));
+      expect(updatedUrl.expiresAt, equals(DateTime(2023, 6)));
 
       // Unchanged properties
       expect(updatedUrl.shortId, equals('abc123'));
       expect(updatedUrl.originalUrl, equals('https://example.com'));
       expect(updatedUrl.shortUrl, equals('https://short.url/abc123'));
-      expect(updatedUrl.createdAt, equals(DateTime(2023, 1, 1)));
+      expect(updatedUrl.createdAt, equals(DateTime(2023)));
     });
 
     test('isExpired returns true for expired URL', () {
-      final pastDate = DateTime.now().subtract(Duration(days: 1));
+      final pastDate = DateTime.now().subtract(const Duration(days: 1));
       final shortUrl = ShortUrl(
         shortId: 'abc123',
         originalUrl: 'https://example.com',
         shortUrl: 'https://short.url/abc123',
-        createdAt: DateTime(2023, 1, 1),
+        createdAt: DateTime(2023),
         expiresAt: pastDate,
       );
 
@@ -131,12 +131,12 @@ void main() {
     });
 
     test('isExpired returns false for non-expired URL', () {
-      final futureDate = DateTime.now().add(Duration(days: 30));
+      final futureDate = DateTime.now().add(const Duration(days: 30));
       final shortUrl = ShortUrl(
         shortId: 'abc123',
         originalUrl: 'https://example.com',
         shortUrl: 'https://short.url/abc123',
-        createdAt: DateTime(2023, 1, 1),
+        createdAt: DateTime(2023),
         expiresAt: futureDate,
       );
 
@@ -148,20 +148,19 @@ void main() {
         shortId: 'abc123',
         originalUrl: 'https://example.com',
         shortUrl: 'https://short.url/abc123',
-        createdAt: DateTime(2023, 1, 1),
-        expiresAt: null,
+        createdAt: DateTime(2023),
       );
 
       expect(shortUrl.isExpired, isFalse);
     });
 
     test('timeUntilExpiration returns correct duration', () {
-      final futureDate = DateTime.now().add(Duration(days: 30));
+      final futureDate = DateTime.now().add(const Duration(days: 30));
       final shortUrl = ShortUrl(
         shortId: 'abc123',
         originalUrl: 'https://example.com',
         shortUrl: 'https://short.url/abc123',
-        createdAt: DateTime(2023, 1, 1),
+        createdAt: DateTime(2023),
         expiresAt: futureDate,
       );
 
@@ -176,7 +175,7 @@ void main() {
         shortId: 'abc123',
         originalUrl: 'https://example.com',
         shortUrl: 'https://short.url/abc123',
-        createdAt: DateTime(2023, 1, 1),
+        createdAt: DateTime(2023),
       );
 
       expect(shortUrl.timeUntilExpiration, isNull);

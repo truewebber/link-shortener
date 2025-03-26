@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../util/browser_detection.dart';
 
 void main() {
   testWidgets('Responsive layout adapts to mobile browser size',
       (tester) async {
-    // Set mobile browser size
-    tester.binding.window.physicalSizeTestValue = const Size(375, 667);
-    tester.binding.window.devicePixelRatioTestValue = 1.0;
+    // Set mobile browser size using non-deprecated API
+    setDisplaySize(tester, const Size(375, 667));
 
     // Arrange
     await tester.pumpWidget(
@@ -62,16 +62,15 @@ void main() {
     expect(find.text('Mobile View'), findsOneWidget);
     expect(find.text('Mobile Layout'), findsOneWidget);
 
-    // Reset the test values
-    addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
-    addTearDown(tester.binding.window.clearDevicePixelRatioTestValue);
+    // Reset the test values using non-deprecated APIs
+    addTearDown(() => clearPhysicalSizeTestValue(tester));
+    addTearDown(() => clearDevicePixelRatioTestValue(tester));
   });
 
   testWidgets('Responsive layout adapts to tablet browser size',
       (tester) async {
-    // Set tablet browser size
-    tester.binding.window.physicalSizeTestValue = const Size(768, 1024);
-    tester.binding.window.devicePixelRatioTestValue = 1.0;
+    // Set tablet browser size using non-deprecated API
+    setDisplaySize(tester, const Size(768, 1024));
 
     // Arrange
     await tester.pumpWidget(
@@ -118,16 +117,15 @@ void main() {
     expect(find.text('Larger View'), findsOneWidget);
     expect(find.text('Larger Layout'), findsOneWidget);
 
-    // Reset the test values
-    addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
-    addTearDown(tester.binding.window.clearDevicePixelRatioTestValue);
+    // Reset the test values using non-deprecated APIs
+    addTearDown(() => clearPhysicalSizeTestValue(tester));
+    addTearDown(() => clearDevicePixelRatioTestValue(tester));
   });
 
   testWidgets('Responsive layout adapts to desktop browser size',
       (tester) async {
-    // Set desktop browser size
-    tester.binding.window.physicalSizeTestValue = const Size(1920, 1080);
-    tester.binding.window.devicePixelRatioTestValue = 1.0;
+    // Set desktop browser size using non-deprecated API
+    setDisplaySize(tester, const Size(1920, 1080));
 
     // Arrange
     await tester.pumpWidget(
@@ -206,8 +204,8 @@ void main() {
     expect(find.text('Desktop Layout'), findsOneWidget);
     expect(find.text('Dashboard'), findsOneWidget); // Sidebar is shown
 
-    // Reset the test values
-    addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
-    addTearDown(tester.binding.window.clearDevicePixelRatioTestValue);
+    // Reset the test values using non-deprecated APIs
+    addTearDown(() => clearPhysicalSizeTestValue(tester));
+    addTearDown(() => clearDevicePixelRatioTestValue(tester));
   });
 }

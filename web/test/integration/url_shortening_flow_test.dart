@@ -3,7 +3,7 @@ import '../util/browser_detection.dart';
 
 void main() {
   group('URL Shortening Integration Tests', () {
-    testWidgets('Complete URL shortening flow', (WidgetTester tester) async {
+    testWidgets('Complete URL shortening flow', (tester) async {
       skipIfNotBrowser(tester);
 
       // This is a placeholder for a real integration test
@@ -17,8 +17,7 @@ void main() {
       expect(isBrowserEnvironment, isTrue);
     });
 
-    testWidgets('URL history is persistent across sessions',
-        (WidgetTester tester) async {
+    testWidgets('URL history is persistent across sessions', (tester) async {
       skipIfNotBrowser(tester);
 
       // This test would verify that URL history is saved and loaded correctly
@@ -26,8 +25,7 @@ void main() {
       expect(isBrowserEnvironment, isTrue);
     });
 
-    testWidgets('reCAPTCHA verification works correctly',
-        (WidgetTester tester) async {
+    testWidgets('reCAPTCHA verification works correctly', (tester) async {
       skipIfNotBrowser(tester);
 
       // This test would verify reCAPTCHA integration
