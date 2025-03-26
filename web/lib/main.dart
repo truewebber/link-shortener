@@ -19,7 +19,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final config = _loadConfiguration();
+  final config = AppConfig.fromWindow();
 
   if (kDebugMode) {
     FlutterError.onError = (details) {
@@ -28,6 +28,7 @@ void main() {
 
     print('Starting Link Shortener App...');
     print('API Base URL: ${config.apiBaseUrl}');
+    print('Google Captcha site key: ${config.googleCaptchaSiteKey}');
     print('Environment: ${config.environment}');
   }
 
@@ -42,18 +43,6 @@ void main() {
     authService: authService,
     urlService: urlService,
   ));
-}
-
-AppConfig _loadConfiguration() {
-  final config = AppConfig.fromWindow();
-
-  if (kDebugMode) {
-    print('Configuration loaded:');
-    print('API Base URL: ${config.apiBaseUrl}');
-    print('Environment: ${config.environment}');
-  }
-
-  return config;
 }
 
 class LinkShortenerApp extends StatefulWidget {
@@ -202,36 +191,6 @@ class _LinkShortenerAppState extends State<LinkShortenerApp> {
           '/profile': (context) => const ProfileScreen(),
           '/auth': (context) => const AuthScreen(),
         },
-        // onGenerateRoute: (settings) {
-        //   if (kDebugMode) {
-        //     print('onGenerateRoute: ${settings.name}');
-        //   }
-        //
-        //   if (settings.name?.startsWith('/app/auth/success') == true) {
-        //     if (kDebugMode) {
-        //       print('Handle request onGenerateRoute: ${settings.name}');
-        //     }
-        //
-        //     final uri = Uri.parse(html.window.location.href);
-        //     final accessToken = uri.queryParameters['access_token'] ?? '';
-        //     final refreshToken = uri.queryParameters['refresh_token'] ?? '';
-        //     final expiresAtMS = int.tryParse(uri.queryParameters['expires_at_ms'] ?? '0') ?? 0;
-        //
-        //     if (kDebugMode) {
-        //       print("accessToken from onGenerateRoute: ${accessToken.isNotEmpty ? '${accessToken.substring(0, 10)}...' : 'EMPTY'}");
-        //     }
-        //
-        //     return MaterialPageRoute(
-        //       builder: (context) => AuthSuccessScreen(
-        //         accessToken: accessToken,
-        //         refreshToken: refreshToken,
-        //         expiresAtMS: expiresAtMS,
-        //       ),
-        //     );
-        //   }
-        //
-        //   return null;
-        // },
       ),
     );
   }

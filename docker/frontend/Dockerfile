@@ -15,6 +15,7 @@ FROM nginx:alpine
 
 ENV PORT=3000
 ENV BACKEND_API_URL=/
+ENV GOOGLE_CAPTCHA_SITE_KEY=''
 ENV ENVIRONMENT=production
 
 COPY --from=builder /app/build/web /usr/share/nginx/html

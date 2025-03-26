@@ -41,6 +41,11 @@ spec:
               value: "{{ .Values.frontend.backendApiUrl }}"
             - name: ENVIRONMENT
               value: "{{ .Values.frontend.environment }}"
+            - name: GOOGLE_CAPTCHA_SITE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Release.Name }}-secret"
+                  key: "google_captcha_site_key"
           livenessProbe:
             httpGet:
               port: {{ .Values.frontend.port }}

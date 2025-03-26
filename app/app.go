@@ -11,10 +11,11 @@ type APIApp struct {
 }
 
 type APICommand struct {
-	CreateLink   *command.CreateLinkHandler
-	FinishOAuth  *command.FinishOAuthHandler
-	Logout       *command.LogoutHandler
-	RefreshToken *command.RefreshTokenHandler
+	CreateLink      *command.CreateLinkHandler
+	FinishOAuth     *command.FinishOAuthHandler
+	Logout          *command.LogoutHandler
+	RefreshToken    *command.RefreshTokenHandler
+	ValidateCaptcha *command.ValidateCaptchaHandler
 }
 
 type APIQuery struct {

@@ -6,4 +6,5 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrTokenExpired       = errors.New("token expired")
 	ErrUserNotFound       = errors.New("user not found")
+	ErrCaptchaInvalid     = errors.New("captcha invalid")
 )

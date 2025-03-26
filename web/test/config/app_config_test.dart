@@ -7,6 +7,7 @@ void main() {
   setUp(() {
     config = const AppConfig(
       apiBaseUrl: 'https://api.test.example.com',
+      googleCaptchaSiteKey: 'site_key',
       environment: 'test',
     );
   });
@@ -14,10 +15,12 @@ void main() {
   group('AppConfig', () {
     test('creates configuration correctly', () {
       const apiUrl = 'https://api.example.com';
+      const googleCaptchaSiteKey = 'test_site_key';
       const env = 'production';
       
       const config = AppConfig(
         apiBaseUrl: apiUrl,
+        googleCaptchaSiteKey: googleCaptchaSiteKey,
         environment: env,
       );
       
@@ -32,6 +35,7 @@ void main() {
       
       const prodConfig = AppConfig(
         apiBaseUrl: '/api',
+        googleCaptchaSiteKey: 'tosibosi',
         environment: 'production',
       );
       
@@ -41,6 +45,7 @@ void main() {
       
       const stagingConfig = AppConfig(
         apiBaseUrl: '/api',
+        googleCaptchaSiteKey: 'bositosi',
         environment: 'staging',
       );
       

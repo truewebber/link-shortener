@@ -7,6 +7,7 @@ import 'package:link_shortener/models/short_url.dart';
 import 'package:link_shortener/models/ttl.dart';
 import 'package:link_shortener/services/api_exception.dart';
 import 'package:link_shortener/services/auth_service.dart';
+import 'package:link_shortener/services/recaptcha_service.dart';
 import 'package:link_shortener/utils/notification_utils.dart';
 
 class UrlService {
@@ -18,6 +19,7 @@ class UrlService {
   final _config = AppConfig.fromWindow();
   final _client = http.Client();
   final _authService = AuthService();
+  final _recaptchaService = RecaptchaService();
 
   String get _baseUrl => _config.apiBaseUrl;
 
@@ -37,9 +39,15 @@ class UrlService {
     }
 
     try {
+      // Get reCAPTCHA token for anonymous users
+      final recaptchaToken = await _recaptchaService.execute('create_unauthorized_short_url');
+
       final response = await _client.post(
         requestUrl,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Recaptcha-Token': recaptchaToken,
+        },
         body: jsonEncode({'url': url}),
       ).timeout(const Duration(seconds: 10));
 

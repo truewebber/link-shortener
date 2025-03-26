@@ -12,6 +12,9 @@ type config struct {
 	BaseHost                 string `env:"BASE_HOST,required=true"`
 	PostgresConnectionString string `env:"POSTGRES_CONNECTION_STRING,required=true"`
 
+	GoogleCaptchaSecretKey string  `env:"GOOGLE_CAPTCHA_SECRET_KEY,required=true"`
+	GoogleCaptchaThreshold float32 `env:"GOOGLE_CAPTCHA_THRESHOLD,required=true"`
+
 	GoogleClientID     string `env:"GOOGLE_CLIENT_ID,required=true"`
 	GoogleClientSecret string `env:"GOOGLE_CLIENT_SECRET,required=true"`
 

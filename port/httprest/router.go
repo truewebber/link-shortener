@@ -7,6 +7,7 @@ import (
 	"github.com/truewebber/gopkg/log"
 	"github.com/truewebber/gopkg/metrics"
 
+	"github.com/truewebber/link-shortener/app/command"
 	"github.com/truewebber/link-shortener/app/query"
 	"github.com/truewebber/link-shortener/port/httprest/handler"
 	"github.com/truewebber/link-shortener/port/httprest/middleware"
@@ -18,6 +19,7 @@ func NewRouterHandler(
 	healthHandler *handler.HealthHandler,
 	latencyRecorder metrics.LatencyRecorder,
 	authUser *query.AuthUserHandler,
+	validateCaptcha *command.ValidateCaptchaHandler,
 	logger log.Logger,
 ) http.Handler {
 	router := mux.NewRouter()
@@ -52,7 +54,9 @@ func NewRouterHandler(
 	authRouter.HandleFunc("/urls", linkHandler.CreateLink).Methods(http.MethodPost)
 
 	// URL shortening endpoint for public usage
-	router.HandleFunc("/api/restricted_urls", linkHandler.CreateAnonymousLink).Methods(http.MethodPost)
+	captchaRouter := router.NewRoute().Subrouter()
+	captchaRouter.Use(middleware.ValidateCaptcha(validateCaptcha, logger))
+	captchaRouter.HandleFunc("/api/restricted_urls", linkHandler.CreateAnonymousLink).Methods(http.MethodPost)
 
 	// Redirect handler for shortened URLs
 	router.HandleFunc("/{hash:[0-9a-zA-Z]+}", linkHandler.Redirect).Methods(http.MethodGet)

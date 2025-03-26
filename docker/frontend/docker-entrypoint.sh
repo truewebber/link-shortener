@@ -7,6 +7,6 @@ echo "starting server on port: $PORT";
 envsubst '$PORT' < /etc/nginx/conf.d/default.template > /etc/nginx/conf.d/default.conf
 
 # Process frontend config
-envsubst '$BACKEND_API_URL,$ENVIRONMENT' < /usr/share/nginx/html/config.template.js > /usr/share/nginx/html/config.js
+envsubst '$BACKEND_API_URL,$ENVIRONMENT,$GOOGLE_CAPTCHA_SITE_KEY' < /usr/share/nginx/html/config.template.js > /usr/share/nginx/html/config.js
 
 exec nginx -g "daemon off;"

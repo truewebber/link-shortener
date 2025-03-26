@@ -92,6 +92,14 @@ spec:
                 secretKeyRef:
                   name: "{{ .Release.Name }}-secret"
                   key: "oauth_apple_team_id"
+            # google captcha
+            - name: GOOGLE_CAPTCHA_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Release.Name }}-secret"
+                  key: "google_captcha_secret_key"
+            - name: GOOGLE_CAPTCHA_THRESHOLD
+              value: "{{ .Values.google_captcha.threshold }}"
           livenessProbe:
             httpGet:
               port: {{ .Values.api.metricsPort }}

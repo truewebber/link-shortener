@@ -46,6 +46,7 @@ func run(logger log.Logger) {
 		healthHandler,
 		latencyRecorder,
 		app.Query.AuthUser,
+		app.Command.ValidateCaptcha,
 		logger,
 	)
 
@@ -105,8 +106,15 @@ func newAppConfig(cfg *config) *service.Config {
 		appleCallbackPath  = "/api/auth/apple/callback"
 	)
 
+	const createUnAuthShortURL = "create_unauthorized_short_url"
+
 	return &service.Config{
 		PostgresConnectionString: cfg.PostgresConnectionString,
+		GoogleCaptchaV3: service.GoogleCaptchaV3{
+			Secret:         cfg.GoogleCaptchaSecretKey,
+			AllowedActions: []string{createUnAuthShortURL},
+			Threshold:      cfg.GoogleCaptchaThreshold,
+		},
 		OAuth: service.OAuth{
 			Google: service.Standard{
 				ClientID:     cfg.GoogleClientID,

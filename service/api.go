@@ -22,13 +22,20 @@ func NewAPIApp(config *Config, logger log.Logger) *app.APIApp {
 	tokenStorage := adapter.NewTokenStoragePgx(pool)
 
 	oauthProviders := buildProviders(&config.OAuth, logger)
+	captchaValidator := adapter.NewGoogleCaptchaV3Validator(
+		config.GoogleCaptchaV3.Secret,
+		config.GoogleCaptchaV3.AllowedActions,
+		config.GoogleCaptchaV3.Threshold,
+		logger,
+	)
 
 	return &app.APIApp{
 		Command: app.APICommand{
-			CreateLink:   command.NewCreateLinkHandler(linkStorage, hashGen, logger),
-			FinishOAuth:  command.NewFinishOAuthHandler(userStorage, tokenStorage, oauthProviders, logger),
-			RefreshToken: command.NewRefreshTokenHandler(userStorage, tokenStorage),
-			Logout:       command.NewLogoutHandler(userStorage, tokenStorage),
+			CreateLink:      command.NewCreateLinkHandler(linkStorage, hashGen, logger),
+			FinishOAuth:     command.NewFinishOAuthHandler(userStorage, tokenStorage, oauthProviders, logger),
+			RefreshToken:    command.NewRefreshTokenHandler(userStorage, tokenStorage),
+			Logout:          command.NewLogoutHandler(userStorage, tokenStorage),
+			ValidateCaptcha: command.NewValidateCaptchaHandler(captchaValidator),
 		},
 		Query: app.APIQuery{
 			GetLinkByHash: query.NewGetLinkByHashHandler(linkStorage, hashGen, logger),
@@ -70,6 +77,7 @@ func buildProviders(oauthConfig *OAuth, logger log.Logger) map[types.Provider]us
 type Config struct {
 	PostgresConnectionString string
 	OAuth                    OAuth
+	GoogleCaptchaV3          GoogleCaptchaV3
 }
 
 type OAuth struct {
@@ -83,4 +91,10 @@ type Apple struct {
 
 type Standard struct {
 	ClientID, ClientSecret, RedirectURL string
+}
+
+type GoogleCaptchaV3 struct {
+	Secret         string
+	AllowedActions []string
+	Threshold      float32
 }

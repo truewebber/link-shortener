@@ -2,13 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:link_shortener/models/auth/oauth_provider.dart';
 import 'package:link_shortener/models/auth/user.dart';
 import 'package:link_shortener/models/auth/user_session.dart';
-import 'package:link_shortener/services/auth_service.dart';
-import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import '../mocks/auth_service.generate.mocks.dart';
-
-@GenerateMocks([AuthService])
 void main() {
   late MockAuthService authService;
   late User testUser;

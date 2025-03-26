@@ -8,6 +8,7 @@ class JSAppConfig {}
 
 extension JSAppConfigExtension on JSAppConfig {
   external String? get apiBaseUrl;
+  external String? get googleCaptchaSiteKey;
   external String? get environment;
 }
 
@@ -17,15 +18,19 @@ external JSAppConfig? get jsAppConfig;
 class AppConfig {
   const AppConfig({
     required this.apiBaseUrl,
+    required this.googleCaptchaSiteKey,
     required this.environment,
   });
 
   factory AppConfig.fromWindow() => AppConfig(
         apiBaseUrl: getApiBaseUrl(),
+        googleCaptchaSiteKey: getGoogleCaptchaSiteKey(),
         environment: getEnvironment(),
       );
 
   final String apiBaseUrl;
+
+  final String googleCaptchaSiteKey;
 
   final String environment;
 
@@ -48,6 +53,20 @@ String getApiBaseUrl() {
   }
 
   return const String.fromEnvironment('API_BASE_URL');
+}
+
+String getGoogleCaptchaSiteKey() {
+  if (kIsWeb) {
+    final runtimeValue = jsAppConfig?.googleCaptchaSiteKey;
+    if (runtimeValue != null) {
+      if (kDebugMode) {
+        print('Найдена конфигурация window.APP_CONFIG.googleCaptchaSiteKey: $runtimeValue');
+      }
+      return runtimeValue;
+    }
+  }
+
+  return const String.fromEnvironment('GOOGLE_CAPTCHA_SITE_KEY');
 }
 
 String getEnvironment() {

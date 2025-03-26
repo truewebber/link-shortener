@@ -41,6 +41,21 @@ class MockAppConfig extends _i1.Mock implements _i2.AppConfig {
           as String);
 
   @override
+  String get googleCaptchaSiteKey =>
+      (super.noSuchMethod(
+            Invocation.getter(#googleCaptchaSiteKey),
+            returnValue: _i3.dummyValue<String>(
+              this,
+              Invocation.getter(#googleCaptchaSiteKey),
+            ),
+            returnValueForMissingStub: _i3.dummyValue<String>(
+              this,
+              Invocation.getter(#googleCaptchaSiteKey),
+            ),
+          )
+          as String);
+
+  @override
   String get environment =>
       (super.noSuchMethod(
             Invocation.getter(#environment),

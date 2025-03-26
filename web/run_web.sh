@@ -13,20 +13,16 @@ flutter clean
 # Get dependencies
 flutter pub get
 
-API_URL=${1:-"http://localhost:9999"}
-ENV=${2:-"development"}
-
-echo "API_URL: $API_URL"
-echo "ENV: $ENV"
-
-# exit 0;
+source .env
 
 echo "Запуск Flutter с параметрами:"
-echo "  API_BASE_URL: $API_URL"
-echo "  ENVIRONMENT: $ENV"
+echo "  API_BASE_URL: $API_BASE_URL"
+echo "  GOOGLE_CAPTCHA_SITE_KEY: $GOOGLE_CAPTCHA_SITE_KEY"
+echo "  ENVIRONMENT: $ENVIRONMENT"
 
 # Запуск Flutter с параметрами компиляции
 flutter run -d chrome \
   --web-browser-flag "--disable-web-security" \
-  --dart-define=API_BASE_URL="$API_URL" \
-  --dart-define=ENVIRONMENT="$ENV"
+  --dart-define=API_BASE_URL="$API_BASE_URL" \
+  --dart-define=GOOGLE_CAPTCHA_SITE_KEY="$GOOGLE_CAPTCHA_SITE_KEY" \
+  --dart-define=ENVIRONMENT="$ENVIRONMENT"

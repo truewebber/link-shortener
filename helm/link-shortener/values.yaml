@@ -10,6 +10,9 @@ frontend:
   environment: "production"
   backendApiUrl: "https://short.twb.one"
 
+google_captcha:
+  threshold: 0
+
 nginx:
   replicas: 1
   port: 80
