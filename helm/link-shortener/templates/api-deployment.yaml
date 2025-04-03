@@ -47,56 +47,56 @@ spec:
             - name: POSTGRES_CONNECTION_STRING
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Release.Name }}-secret"
+                  name: {{ .Release.Name }}
                   key: "postgres_connection_string"
             # oauth_google
             - name: GOOGLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Release.Name }}-secret"
+                  name: {{ .Release.Name }}
                   key: "oauth_google_client_id"
             - name: GOOGLE_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Release.Name }}-secret"
+                  name: {{ .Release.Name }}
                   key: "oauth_google_client_secret"
             # oauth_github
             - name: GITHUB_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Release.Name }}-secret"
+                  name: {{ .Release.Name }}
                   key: "oauth_github_client_id"
             - name: GITHUB_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Release.Name }}-secret"
+                  name: {{ .Release.Name }}
                   key: "oauth_github_client_secret"
             # oauth_apple
             - name: APPLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Release.Name }}-secret"
+                  name: {{ .Release.Name }}
                   key: "oauth_apple_client_id"
             - name: APPLE_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Release.Name }}-secret"
+                  name: {{ .Release.Name }}
                   key: "oauth_apple_private_key"
             - name: APPLE_KEY_ID
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Release.Name }}-secret"
+                  name: {{ .Release.Name }}
                   key: "oauth_apple_key_id"
             - name: APPLE_TEAM_ID
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Release.Name }}-secret"
+                  name: {{ .Release.Name }}
                   key: "oauth_apple_team_id"
             # google captcha
             - name: GOOGLE_CAPTCHA_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Release.Name }}-secret"
+                  name: {{ .Release.Name }}
                   key: "google_captcha_secret_key"
             - name: GOOGLE_CAPTCHA_THRESHOLD
               value: "{{ .Values.google_captcha.threshold }}"

@@ -3,6 +3,21 @@ api:
   port: 9999
   metricsPort: 9998
   host: "short.twb.one"
+  postgres_connection_string: ref+gcpsecrets://truewebber-444012/link_shortener_postgres_connection_string
+  oauth:
+    google:
+      client_id: ref+gcpsecrets://truewebber-444012/link_shortener_oauth_google_client_id
+      client_secret: ref+gcpsecrets://truewebber-444012/link_shortener_oauth_google_client_secret
+    github:
+      client_id: ref+gcpsecrets://truewebber-444012/link_shortener_oauth_github_client_id
+      client_secret: ref+gcpsecrets://truewebber-444012/link_shortener_oauth_github_client_secret
+    apple:
+      client_id: ref+gcpsecrets://truewebber-444012/link_shortener_oauth_apple_client_id
+      private_key: ref+gcpsecrets://truewebber-444012/link_shortener_oauth_apple_private_key
+      key_id: ref+gcpsecrets://truewebber-444012/link_shortener_oauth_apple_key_id
+      team_id: ref+gcpsecrets://truewebber-444012/link_shortener_oauth_apple_team_id
+  google_captcha_site_key: ref+gcpsecrets://truewebber-444012/link_shortener_google_captcha_site_key
+  google_captcha_secret_key: ref+gcpsecrets://truewebber-444012/link_shortener_google_captcha_secret_key
 
 frontend:
   replicaCount: 1
