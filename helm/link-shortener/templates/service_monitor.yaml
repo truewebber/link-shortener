@@ -4,6 +4,7 @@ metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
   labels:
+    release: prometheus
     app: "link-shortener"
   annotations:
     repo: "https://github.com/truewebber/link-shortener"
