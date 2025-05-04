@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:link_shortener/models/ttl.dart';
 import 'package:link_shortener/services/url_service.dart';
+import 'package:link_shortener/utils/url_utils.dart';
 
 class UrlShortenerForm extends StatefulWidget {
   const UrlShortenerForm({
@@ -67,22 +68,13 @@ class _UrlShortenerFormState extends State<UrlShortenerForm>
       return;
     }
 
-    try {
-      final uri = Uri.parse(url);
-      final isValid =
-          uri.isAbsolute && (uri.scheme == 'http' || uri.scheme == 'https');
-      setState(() {
-        _isValidUrl = isValid;
-        _errorMessage = isValid
-            ? null
-            : 'Please enter a valid URL starting with http:// or https://';
-      });
-    } catch (e) {
-      setState(() {
-        _isValidUrl = false;
-        _errorMessage = 'Please enter a valid URL';
-      });
-    }
+    final isValid = UrlUtils.isValidUrl(url);
+    final errorMessage = UrlUtils.getValidationErrorMessage(url);
+    
+    setState(() {
+      _isValidUrl = isValid;
+      _errorMessage = errorMessage;
+    });
   }
 
   @override
