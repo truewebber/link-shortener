@@ -18,12 +18,11 @@ class UrlUtils {
         
         // Check if the base URL is valid
         final baseUri = Uri.parse(urlWithoutFragment);
-        if (!baseUri.isAbsolute || (baseUri.scheme != 'http' && baseUri.scheme != 'https') || baseUri.host.isEmpty) {
-          return false;
-        }
-        
-        // The fragment itself can be anything, so we don't validate it further
-        return true;
+        final isValid = baseUri.isAbsolute && 
+                     (baseUri.scheme == 'http' || baseUri.scheme == 'https') && 
+                     baseUri.host.isNotEmpty;
+
+        return isValid;
       }
       
       // Regular URL validation for URLs without fragments
