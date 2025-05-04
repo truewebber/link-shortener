@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:link_shortener/services/url_service.dart';
 import 'package:link_shortener/widgets/url_shortener_form.dart';
 import '../mock/url_service_mock.dart';
 
